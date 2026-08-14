@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Model Training | ML Prediction Engine</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1e293b;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #111827;
+            color: white;
+            padding: 25px 15px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+        }
+
+        .logo {
+            font-size: 19px;
+            font-weight: bold;
+            margin-bottom: 35px;
+            padding: 10px;
+        }
+
+        .nav {
+            display: block;
+            text-decoration: none;
+            color: #cbd5e1;
+            padding: 13px;
+            margin: 5px 0;
+            border-radius: 8px;
+        }
+
+        .nav:hover,
+        .active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .main {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+        }
+
+        .header {
+            background: white;
+            padding: 25px 35px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .header p {
+            color: #64748b;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .hero {
+            background: linear-gradient(
+                135deg,
+                #172554,
+                #4338ca
+            );
+
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .hero h2 {
+            margin-top: 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 20px;
+        }
+
+        .stat {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .label {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .value {
+            font-size: 27px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .section h2 {
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+        }
+
+        .best {
+            background: #ecfdf5;
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #eef2ff;
+            color: #4338ca;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .success {
+            background: #ecfdf5;
+            color: #166534;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .next {
+            margin-top: 30px;
+            background: linear-gradient(
+                135deg,
+                #eff6ff,
+                #ecfdf5
+            );
+
+            padding: 25px;
+            border-radius: 14px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .button {
+            text-decoration: none;
+            background: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="layout">
+
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            🤖 ML Prediction Engine
+        </div>
+
+        <a class="nav" href="/">
+            Dashboard
+        </a>
+
+        <a class="nav" href="/">
+            Upload Dataset
+        </a>
+
+        <a class="nav" href="/">
+            Dataset Analysis
+        </a>
+
+        <a class="nav" href="/preprocessing/">
+            Data Preprocessing
+        </a>
+
+        <a class="nav active"
+           href="/model-training/">
+            Train Model
+        </a>
+
+        <a class="nav" href="#">
+            Predictions
+        </a>
+
+        <a class="nav" href="#">
+            Recommendations
+        </a>
+
+        <a class="nav" href="#">
+            Model Performance
+        </a>
+
+    </aside>
+
+
+    <main class="main">
+
+
+        <header class="header">
+
+            <h1>
+                Model Training
+            </h1>
+
+            <p>
+                Train and compare machine learning models
+                for student outcome prediction.
+            </p>
+
+        </header>
+
+
+        <div class="content">
+
+
+            {% if error %}
+
+                <div class="error">
+
+                    <strong>Error:</strong>
+
+                    {{ error }}
+
+                </div>
+
+            {% endif %}
+
+
+            {% if success %}
+
+
+                <div class="hero">
+
+                    <h2>
+                        Model Training Completed
+                    </h2>
+
+                    <p>
+                        Multiple machine learning algorithms
+                        were trained and evaluated automatically.
+                    </p>
+
+                </div>
+
+
+                <div class="success">
+
+                    ✓ Models trained successfully.
+
+                    Best model:
+
+                    <strong>
+                        {{ best_model }}
+                    </strong>
+
+                </div>
+
+
+                <div class="stats">
+
+
+                    <div class="stat">
+
+                        <div class="label">
+                            Target Variable
+                        </div>
+
+                        <div class="value">
+                            {{ target }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="label">
+                            Training Records
+                        </div>
+
+                        <div class="value">
+                            {{ training_rows }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="label">
+                            Testing Records
+                        </div>
+
+                        <div class="value">
+                            {{ testing_rows }}
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="section">
+
+                    <h2>
+                        Model Comparison
+                    </h2>
+
+                    <div class="card">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Model
+                                    </th>
+
+                                    <th>
+                                        Accuracy
+                                    </th>
+
+                                    <th>
+                                        Precision
+                                    </th>
+
+                                    <th>
+                                        Recall
+                                    </th>
+
+                                    <th>
+                                        F1 Score
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for model in results %}
+
+                                    <tr
+                                        {% if model.name == best_model %}
+                                            class="best"
+                                        {% endif %}
+                                    >
+
+                                        <td>
+
+                                            <strong>
+                                                {{ model.name }}
+                                            </strong>
+
+                                            {% if model.name == best_model %}
+
+                                                <span class="badge">
+                                                    BEST MODEL
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+                                        <td>
+                                            {{ model.accuracy }}%
+                                        </td>
+
+                                        <td>
+                                            {{ model.precision }}%
+                                        </td>
+
+                                        <td>
+                                            {{ model.recall }}%
+                                        </td>
+
+                                        <td>
+                                            {{ model.f1 }}%
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <div class="next">
+
+                    <div>
+
+                        <h2>
+                            Best Model Selected
+                        </h2>
+
+                        <p>
+
+                            {{ best_model }}
+
+                            achieved the highest test accuracy:
+
+                            <strong>
+                                {{ best_accuracy }}%
+                            </strong>
+
+                        </p>
+
+                    </div>
+
+
+                    <a
+                        href="#"
+                        class="button"
+                    >
+                        Make Predictions →
+                    </a>
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="card">
+
+                    <h2>
+                        No processed dataset found
+                    </h2>
+
+                    <p>
+                        Complete data preprocessing before
+                        training the machine learning models.
+                    </p>
+
+                    <br>
+
+                    <a
+                        href="/preprocessing/"
+                        class="button"
+                    >
+                        Go to Preprocessing
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ML Prediction Engine</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1e293b;
+        }
+
+        /* =========================
+           LAYOUT
+        ========================= */
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================= */
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #111827, #172554);
+            color: white;
+            padding: 25px 16px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            margin-bottom: 35px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .menu-title {
+            font-size: 11px;
+            color: #94a3b8;
+            letter-spacing: 1px;
+            margin: 20px 10px 10px;
+            text-transform: uppercase;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            margin: 5px 0;
+            border-radius: 10px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: linear-gradient(90deg, #4f46e5, #2563eb);
+            color: white;
+        }
+
+        .nav-icon {
+            width: 22px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        /* =========================
+           MAIN CONTENT
+        ========================= */
+
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            min-height: 100vh;
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            height: 75px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+            color: #0f172a;
+        }
+
+        .page-title p {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .user-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-info strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .user-info span {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        /* =========================
+           CONTENT
+        ========================= */
+
+        .content {
+            padding: 30px;
+        }
+
+        /* =========================
+           STATS
+        ========================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 22px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+        }
+
+        .stat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .blue {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .purple {
+            background: #f3e8ff;
+            color: #7e22ce;
+        }
+
+        .orange {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 16px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 5px;
+        }
+
+        /* =========================
+           UPLOAD CARD
+        ========================= */
+
+        .upload-card {
+            background: linear-gradient(135deg, #172554, #312e81);
+            color: white;
+            border-radius: 18px;
+            padding: 30px;
+            margin-bottom: 22px;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15);
+        }
+
+        .upload-card h2 {
+            font-size: 21px;
+            margin-bottom: 8px;
+        }
+
+        .upload-card p {
+            color: #c7d2fe;
+            font-size: 14px;
+            margin-bottom: 22px;
+        }
+
+        .upload-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .file-input {
+            background: white;
+            color: #334155;
+            padding: 11px;
+            border-radius: 8px;
+            border: none;
+            min-width: 280px;
+        }
+
+        .analyse-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #22c55e;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .analyse-btn:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+
+        /* =========================
+           MESSAGES
+        ========================= */
+
+        .success {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #047857;
+            padding: 15px 18px;
+            border-radius: 10px;
+            margin-bottom: 22px;
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 15px 18px;
+            border-radius: 10px;
+            margin-bottom: 22px;
+        }
+
+        /* =========================
+           SECTION TITLE
+        ========================= */
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 28px 0 15px;
+        }
+
+        .section-header h2 {
+            font-size: 19px;
+            color: #0f172a;
+        }
+
+        .section-header span {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* =========================
+           CARDS
+        ========================= */
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 22px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* =========================
+           TABLE
+        ========================= */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            text-align: left;
+            padding: 13px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        .number {
+            color: #64748b;
+            width: 50px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .zero {
+            color: #16a34a;
+            font-weight: 700;
+        }
+
+        /* =========================
+           WORKFLOW
+        ========================= */
+
+        .workflow {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+
+        .workflow-step {
+            text-align: center;
+            padding: 18px 8px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .workflow-icon {
+            width: 40px;
+            height: 40px;
+            margin: auto;
+            border-radius: 50%;
+            background: #e0e7ff;
+            color: #4338ca;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .workflow-step strong {
+            display: block;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .workflow-step span {
+            display: block;
+            color: #64748b;
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        /* =========================
+           FUTURE FEATURES
+        ========================= */
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 22px;
+        }
+
+        .feature-card-icon {
+            font-size: 25px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card h3 {
+            font-size: 15px;
+            margin-bottom: 7px;
+        }
+
+        .feature-card p {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .coming {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 11px;
+            padding: 30px 0 10px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 1100px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .workflow {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 800px) {
+
+            .sidebar {
+                width: 70px;
+                padding: 15px 8px;
+            }
+
+            .logo-text,
+            .menu-title,
+            .nav-item span:not(.nav-icon) {
+                display: none;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+
+            .nav-item {
+                justify-content: center;
+            }
+
+            .main {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 18px;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .user-info {
+                display: none;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="app">
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-icon">
+                ML
+            </div>
+
+            <div class="logo-text">
+                ML Prediction Engine
+            </div>
+
+        </div>
+
+
+        <div class="menu-title">
+            Main Menu
+        </div>
+
+
+        <a href="#" class="nav-item active">
+            <span class="nav-icon">⌂</span>
+            <span>Dashboard</span>
+        </a>
+
+
+        <a href="#upload" class="nav-item">
+            <span class="nav-icon">↑</span>
+            <span>Upload Dataset</span>
+        </a>
+
+
+        <a href="#analysis" class="nav-item">
+            <span class="nav-icon">▦</span>
+            <span>Dataset Analysis</span>
+        </a>
+
+
+        <a href="#preprocessing" class="nav-item">
+            <span class="nav-icon">⚙</span>
+            <span>Data Preprocessing</span>
+        </a>
+
+
+        <a href="#training" class="nav-item">
+            <span class="nav-icon">◆</span>
+            <span>Train Model</span>
+        </a>
+
+
+        <a href="#prediction" class="nav-item">
+            <span class="nav-icon">◎</span>
+            <span>Make Predictions</span>
+        </a>
+
+
+        <a href="#recommendations" class="nav-item">
+            <span class="nav-icon">💡</span>
+            <span>Recommendations</span>
+        </a>
+
+
+        <a href="#performance" class="nav-item">
+            <span class="nav-icon">▥</span>
+            <span>Model Performance</span>
+        </a>
+
+
+        <a href="#reports" class="nav-item">
+            <span class="nav-icon">▤</span>
+            <span>Reports</span>
+        </a>
+
+
+        <div class="menu-title">
+            System
+        </div>
+
+
+        <a href="#" class="nav-item">
+            <span class="nav-icon">⚙</span>
+            <span>Settings</span>
+        </a>
+
+
+        <a href="#" class="nav-item">
+            <span class="nav-icon">?</span>
+            <span>Help</span>
+        </a>
+
+    </aside>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main class="main">
+
+
+        <!-- TOP BAR -->
+
+        <header class="topbar">
+
+            <div class="page-title">
+
+                <h1>
+                    ML Prediction Dashboard
+                </h1>
+
+                <p>
+                    Analyse, prepare and predict student outcomes
+                </p>
+
+            </div>
+
+
+            <div class="user-box">
+
+                <div class="user-avatar">
+                    A
+                </div>
+
+                <div class="user-info">
+
+                    <strong>
+                        Admin User
+                    </strong>
+
+                    <span>
+                        ML Administrator
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="content">
+
+
+            <!-- =========================
+                 STAT CARDS
+            ========================== -->
+
+            <div class="stats">
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div>
+                            <div class="stat-label">
+                                Total Records
+                            </div>
+
+                            <div class="stat-value">
+                                {% if rows %}
+                                    {{ rows }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="stat-icon blue">
+                            ▣
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div>
+                            <div class="stat-label">
+                                Total Columns
+                            </div>
+
+                            <div class="stat-value">
+                                {% if columns %}
+                                    {{ columns }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="stat-icon green">
+                            ▦
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div>
+                            <div class="stat-label">
+                                Target Variable
+                            </div>
+
+                            <div class="stat-value" style="font-size:20px;">
+                                {% if target %}
+                                    {{ target }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="stat-icon purple">
+                            ◎
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div>
+                            <div class="stat-label">
+                                Missing Values
+                            </div>
+
+                            <div class="stat-value">
+                                {% if missing_values %}
+                                    0
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="stat-icon orange">
+                            ✓
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 UPLOAD
+            ========================== -->
+
+            <section id="upload" class="upload-card">
+
+                <h2>
+                    Upload Your Dataset
+                </h2>
+
+                <p>
+                    Upload a CSV dataset and the system will automatically
+                    analyse its structure and prepare it for machine learning.
+                </p>
+
+
+                <form
+                    method="POST"
+                    enctype="multipart/form-data"
+                    class="upload-form"
+                >
+
+                    {% csrf_token %}
+
+                    <input
+                        type="file"
+                        name="dataset"
+                        accept=".csv"
+                        required
+                        class="file-input"
+                    >
+
+
+                    <button
+                        type="submit"
+                        class="analyse-btn"
+                    >
+                        Analyse Dataset
+                    </button>
+
+                </form>
+
+            </section>
+
+
+            <!-- =========================
+                 ERROR
+            ========================== -->
+
+            {% if error %}
+
+                <div class="error">
+
+                    <strong>
+                        Analysis Error
+                    </strong>
+
+                    <br>
+
+                    {{ error }}
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- =========================
+                 SUCCESS
+            ========================== -->
+
+            {% if rows %}
+
+                <div class="success">
+
+                    <strong>
+                        ✓ Dataset analysed successfully.
+                    </strong>
+
+                    Your dataset has been successfully loaded and analysed.
+
+                </div>
+
+
+                <!-- =========================
+                     ANALYSIS
+                ========================== -->
+
+                <section id="analysis">
+
+                    <div class="section-header">
+
+                        <h2>
+                            Dataset Analysis
+                        </h2>
+
+                        <span>
+                            Automatic dataset inspection
+                        </span>
+
+                    </div>
+
+
+                    <div class="two-column">
+
+
+                        <!-- DATASET SUMMARY -->
+
+                        <div class="card">
+
+                            <h3 style="margin-bottom:18px;">
+                                Dataset Information
+                            </h3>
+
+
+                            <table>
+
+                                <tr>
+
+                                    <td>
+                                        Number of Records
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            {{ rows }}
+                                        </strong>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+                                        Number of Columns
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            {{ columns }}
+                                        </strong>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+                                        Target Column
+                                    </td>
+
+                                    <td>
+                                        <span class="badge">
+                                            {{ target }}
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+                                        Dataset Status
+                                    </td>
+
+                                    <td class="zero">
+                                        ✓ Successfully Analysed
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </div>
+
+
+                        <!-- ML WORKFLOW -->
+
+                        <div class="card">
+
+                            <h3 style="margin-bottom:18px;">
+                                Machine Learning Workflow
+                            </h3>
+
+
+                            <div class="workflow">
+
+                                <div class="workflow-step">
+
+                                    <div class="workflow-icon">
+                                        1
+                                    </div>
+
+                                    <strong>
+                                        Upload
+                                    </strong>
+
+                                    <span>
+                                        CSV Dataset
+                                    </span>
+
+                                </div>
+
+
+                                <div class="workflow-step">
+
+                                    <div class="workflow-icon">
+                                        2
+                                    </div>
+
+                                    <strong>
+                                        Analyse
+                                    </strong>
+
+                                    <span>
+                                        Explore Data
+                                    </span>
+
+                                </div>
+
+
+                                <div class="workflow-step">
+
+                                    <div class="workflow-icon">
+                                        3
+                                    </div>
+
+                                    <strong>
+                                        Prepare
+                                    </strong>
+
+                                    <span>
+                                        Clean Data
+                                    </span>
+
+                                </div>
+
+
+                                <div class="workflow-step">
+
+                                    <div class="workflow-icon">
+                                        4
+                                    </div>
+
+                                    <strong>
+                                        Train
+                                    </strong>
+
+                                    <span>
+                                        ML Models
+                                    </span>
+
+                                </div>
+
+
+                                <div class="workflow-step">
+
+                                    <div class="workflow-icon">
+                                        5
+                                    </div>
+
+                                    <strong>
+                                        Predict
+                                    </strong>
+
+                                    <span>
+                                        Outcomes
+                                    </span>
+
+                                </div>
+
+
+                                <div class="workflow-step">
+
+                                    <div class="workflow-icon">
+                                        6
+                                    </div>
+
+                                    <strong>
+                                        Recommend
+                                    </strong>
+
+                                    <span>
+                                        Suggestions
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =========================
+                     COLUMNS
+                ========================== -->
+
+                {% if column_names %}
+
+                    <section class="section-header">
+
+                        <h2>
+                            Dataset Columns
+                        </h2>
+
+                        <span>
+                            {{ columns }} columns detected
+                        </span>
+
+                    </section>
+
+
+                    <div class="card">
+
+                        <div class="table-wrapper">
+
+                            <table>
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th class="number">
+                                            #
+                                        </th>
+
+                                        <th>
+                                            Column Name
+                                        </th>
+
+                                        <th>
+                                            Role
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {% for column in column_names %}
+
+                                        <tr>
+
+                                            <td class="number">
+                                                {{ forloop.counter }}
+                                            </td>
+
+                                            <td>
+                                                <strong>
+                                                    {{ column }}
+                                                </strong>
+                                            </td>
+
+                                            <td>
+
+                                                {% if column == target %}
+
+                                                    <span
+                                                        class="badge"
+                                                        style="background:#dcfce7;color:#15803d;"
+                                                    >
+                                                        Target
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="badge">
+                                                        Feature
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- =========================
+                     DATA TYPES + MISSING
+                ========================== -->
+
+                <div class="two-column">
+
+
+                    {% if data_types %}
+
+                        <section>
+
+                            <div class="section-header">
+
+                                <h2>
+                                    Data Types
+                                </h2>
+
+                            </div>
+
+
+                            <div class="card">
+
+                                <div class="table-wrapper">
+
+                                    <table>
+
+                                        <thead>
+
+                                            <tr>
+
+                                                <th>
+                                                    Column
+                                                </th>
+
+                                                <th>
+                                                    Data Type
+                                                </th>
+
+                                            </tr>
+
+                                        </thead>
+
+
+                                        <tbody>
+
+                                            {% for column, dtype in data_types.items %}
+
+                                                <tr>
+
+                                                    <td>
+                                                        {{ column }}
+                                                    </td>
+
+                                                    <td>
+
+                                                        <span class="badge">
+                                                            {{ dtype }}
+                                                        </span>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            {% endfor %}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                    {% endif %}
+
+
+                    {% if missing_values %}
+
+                        <section>
+
+                            <div class="section-header">
+
+                                <h2>
+                                    Missing Values
+                                </h2>
+
+                            </div>
+
+
+                            <div class="card">
+
+                                <div class="table-wrapper">
+
+                                    <table>
+
+                                        <thead>
+
+                                            <tr>
+
+                                                <th>
+                                                    Column
+                                                </th>
+
+                                                <th>
+                                                    Missing Values
+                                                </th>
+
+                                            </tr>
+
+                                        </thead>
+
+
+                                        <tbody>
+
+                                            {% for column, value in missing_values.items %}
+
+                                                <tr>
+
+                                                    <td>
+                                                        {{ column }}
+                                                    </td>
+
+                                                    <td>
+
+                                                        {% if value == 0 %}
+
+                                                            <span class="zero">
+                                                                ✓ 0
+                                                            </span>
+
+                                                        {% else %}
+
+                                                            <strong style="color:#dc2626;">
+                                                                {{ value }}
+                                                            </strong>
+
+                                                        {% endif %}
+
+                                                    </td>
+
+                                                </tr>
+
+                                            {% endfor %}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- =========================
+                     FUTURE ML FEATURES
+                ========================== -->
+
+                <section id="preprocessing">
+
+                    <div class="section-header">
+
+                        <h2>
+                            ML Pipeline
+                        </h2>
+
+                        <span>
+                            Next stages of the prediction system
+                        </span>
+
+                    </div>
+
+
+                    <div class="feature-grid">
+
+
+                        <div class="feature-card">
+
+                            <div class="feature-card-icon">
+                                ⚙️
+                            </div>
+
+                            <h3>
+                                Data Preprocessing
+                            </h3>
+
+                            <p>
+                                Automatically clean the dataset, encode
+                                categorical variables and prepare the features
+                                for machine learning.
+                            </p>
+
+                            <span class="coming">
+                                NEXT STAGE
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="feature-card"
+                            id="training"
+                        >
+
+                            <div class="feature-card-icon">
+                                🤖
+                            </div>
+
+                            <h3>
+                                Model Training
+                            </h3>
+
+                            <p>
+                                Train multiple suitable machine-learning
+                                models and compare their performance to select
+                                the strongest model.
+                            </p>
+
+                            <span class="coming">
+                                NEXT STAGE
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="feature-card"
+                            id="prediction"
+                        >
+
+                            <div class="feature-card-icon">
+                                🎯
+                            </div>
+
+                            <h3>
+                                Student Prediction
+                            </h3>
+
+                            <p>
+                                Enter student information and predict the
+                                likely final outcome using the trained model.
+                            </p>
+
+                            <span class="coming">
+                                NEXT STAGE
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="feature-card"
+                            id="recommendations"
+                        >
+
+                            <div class="feature-card-icon">
+                                💡
+                            </div>
+
+                            <h3>
+                                Recommendations
+                            </h3>
+
+                            <p>
+                                Generate practical suggestions based on the
+                                predicted student outcome and important risk
+                                factors.
+                            </p>
+
+                            <span class="coming">
+                                NEXT STAGE
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="feature-card"
+                            id="performance"
+                        >
+
+                            <div class="feature-card-icon">
+                                📈
+                            </div>
+
+                            <h3>
+                                Model Performance
+                            </h3>
+
+                            <p>
+                                Display accuracy, precision, recall, F1-score,
+                                confusion matrix and model comparison results.
+                            </p>
+
+                            <span class="coming">
+                                NEXT STAGE
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="feature-card"
+                            id="reports"
+                        >
+
+                            <div class="feature-card-icon">
+                                📄
+                            </div>
+
+                            <h3>
+                                Automated Reports
+                            </h3>
+
+                            <p>
+                                Generate a professional report containing
+                                dataset analysis, model performance,
+                                predictions and recommendations.
+                            </p>
+
+                            <span class="coming">
+                                NEXT STAGE
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+            {% else %}
+
+
+                <!-- =========================
+                     EMPTY STATE
+                ========================== -->
+
+                <div class="card" style="text-align:center;padding:60px 20px;">
+
+                    <div style="font-size:50px;margin-bottom:15px;">
+                        📊
+                    </div>
+
+                    <h2 style="margin-bottom:10px;">
+                        No Dataset Analysed Yet
+                    </h2>
+
+                    <p style="color:#64748b;">
+                        Upload a CSV dataset above to start the
+                        predictive-analytics workflow.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+
+            <footer>
+
+                ML Prediction Engine • Predictive Analytics & Student
+                Performance System
+
+                <br><br>
+
+                © 2026 All rights reserved.
+
+            </footer>
+
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>
