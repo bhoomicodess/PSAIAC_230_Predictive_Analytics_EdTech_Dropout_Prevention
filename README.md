@@ -142,7 +142,7 @@ requirements.txt        Python dependencies
 ## Team Information
 
 **Project:** PSAIAC 230 Predictive Analytics EdTech Dropout Prevention<br>
-**Repository owner:** Bhoomika (`bhoomicodess`)
+**Repository owner:** Bhoomika (`bhoomicodess`)<br>
 **Contributor:** Hena (`Hena757`), Arpitha (`Arpitha`), Annapurna Kb (`Annapurna Kb`)
 
 The project combines responsibilities across data preparation, machine-learning experimentation, Django development, interface design, evaluation, and documentation. Additional team members and their roles can be added here as the project team roster is confirmed.
