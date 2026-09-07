@@ -756,6 +756,7 @@ def model_training(request):
                 zero_division=0
             )
 
+<<<<<<< HEAD
             roc_auc = None
             roc_curve_image = None
 
@@ -796,6 +797,8 @@ def model_training(request):
                 roc_auc = None
                 roc_curve_image = None
 
+=======
+>>>>>>> origin/main
             results.append({
 
                 "name": model_name,
@@ -820,6 +823,7 @@ def model_training(request):
                     2
                 ),
 
+<<<<<<< HEAD
                 "roc_auc": round(
                     roc_auc * 100,
                     2
@@ -827,6 +831,8 @@ def model_training(request):
 
                 "roc_curve_image": roc_curve_image,
 
+=======
+>>>>>>> origin/main
             })
 
         # =================================================
