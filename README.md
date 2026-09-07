@@ -87,6 +87,7 @@ python manage.py check
 - 80/20 train-test split with a fixed random state for repeatable comparisons
 - Logistic Regression, Decision Tree, and Random Forest training
 - Accuracy, precision, recall, and weighted F1 evaluation
+- ROC-AUC scores and ROC curve visualizations for model comparison
 - Automatic best-model selection by accuracy
 - Browser-based Django interface with separate workflow pages
 
