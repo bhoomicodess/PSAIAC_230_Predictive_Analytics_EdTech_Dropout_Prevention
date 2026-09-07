@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Data Preprocessing | ML Prediction Engine</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1e293b;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #111827, #172554);
+            color: white;
+            padding: 25px 16px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            margin-bottom: 35px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .menu-title {
+            font-size: 11px;
+            color: #94a3b8;
+            margin: 20px 10px 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            margin: 5px 0;
+            border-radius: 10px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: linear-gradient(90deg, #4f46e5, #2563eb);
+            color: white;
+        }
+
+        .nav-icon {
+            width: 22px;
+            text-align: center;
+        }
+
+        /* MAIN */
+
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 75px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .topbar h1 {
+            font-size: 23px;
+            color: #0f172a;
+        }
+
+        .topbar p {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .user-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        /* HERO */
+
+        .hero {
+            background: linear-gradient(135deg, #172554, #312e81);
+            color: white;
+            padding: 30px;
+            border-radius: 18px;
+            margin-bottom: 24px;
+        }
+
+        .hero h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            color: #c7d2fe;
+            font-size: 14px;
+        }
+
+        /* CARDS */
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 22px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 25px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .section {
+            margin-top: 25px;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-title h2 {
+            font-size: 19px;
+            color: #0f172a;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 22px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+        }
+
+        /* STATUS */
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .status {
+            padding: 18px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .status p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .success {
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .warning {
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        /* TARGET */
+
+        .target-box {
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .target-box strong {
+            color: #3730a3;
+        }
+
+        /* TABLE */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* NEXT */
+
+        .next-card {
+            margin-top: 25px;
+            background: linear-gradient(135deg, #ecfdf5, #eff6ff);
+            border: 1px solid #bfdbfe;
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .next-card h3 {
+            margin-bottom: 7px;
+        }
+
+        .next-card p {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .next-button {
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .next-button:hover {
+            background: #1d4ed8;
+        }
+
+        /* ERROR */
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 11px;
+            padding: 35px 0 10px;
+        }
+
+        @media (max-width: 1000px) {
+
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 70px;
+            }
+
+            .logo-text,
+            .menu-title,
+            .nav-item span:not(.nav-icon) {
+                display: none;
+            }
+
+            .nav-item {
+                justify-content: center;
+            }
+
+            .main {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+            }
+
+            .content {
+                padding: 18px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .next-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="app">
+
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-icon">
+                ML
+            </div>
+
+            <div class="logo-text">
+                ML Prediction Engine
+            </div>
+
+        </div>
+
+
+        <div class="menu-title">
+            Main Menu
+        </div>
+
+
+        <a href="/" class="nav-item">
+
+            <span class="nav-icon">
+                ⌂
+            </span>
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+
+        <a href="/" class="nav-item">
+
+            <span class="nav-icon">
+                ↑
+            </span>
+
+            <span>
+                Upload Dataset
+            </span>
+
+        </a>
+
+
+        <a href="/" class="nav-item">
+
+            <span class="nav-icon">
+                ▦
+            </span>
+
+            <span>
+                Dataset Analysis
+            </span>
+
+        </a>
+
+
+        <a href="/preprocessing/" class="nav-item active">
+
+            <span class="nav-icon">
+                ⚙
+            </span>
+
+            <span>
+                Data Preprocessing
+            </span>
+
+        </a>
+
+
+        <div class="menu-title">
+            ML System
+        </div>
+
+
+        <a href="#" class="nav-item">
+
+            <span class="nav-icon">
+                ◆
+            </span>
+
+            <span>
+                Train Model
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            <span class="nav-icon">
+                ◎
+            </span>
+
+            <span>
+                Predictions
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            <span class="nav-icon">
+                💡
+            </span>
+
+            <span>
+                Recommendations
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            <span class="nav-icon">
+                ▥
+            </span>
+
+            <span>
+                Model Performance
+            </span>
+
+        </a>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div>
+
+                <h1>
+                    Data Preprocessing
+                </h1>
+
+                <p>
+                    Automatically prepare your dataset for machine learning
+                </p>
+
+            </div>
+
+
+            <div class="user-box">
+
+                <div class="avatar">
+                    A
+                </div>
+
+                <div>
+
+                    <strong>
+                        Admin User
+                    </strong>
+
+                    <br>
+
+                    <span style="font-size:11px;color:#64748b;">
+                        ML Administrator
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="content">
+
+
+            {% if error %}
+
+                <div class="error">
+
+                    <strong>
+                        Error:
+                    </strong>
+
+                    {{ error }}
+
+                </div>
+
+            {% endif %}
+
+
+            {% if success %}
+
+
+                <!-- HERO -->
+
+                <section class="hero">
+
+                    <h2>
+                        Dataset Preprocessing Complete
+                    </h2>
+
+                    <p>
+                        The system has automatically cleaned and prepared
+                        the uploaded dataset for machine learning.
+                    </p>
+
+                </section>
+
+
+                <!-- STATISTICS -->
+
+                <div class="grid">
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Original Records
+                        </div>
+
+                        <div class="stat-value">
+                            {{ original_rows }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Processed Records
+                        </div>
+
+                        <div class="stat-value">
+                            {{ processed_rows }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Original Columns
+                        </div>
+
+                        <div class="stat-value">
+                            {{ original_columns }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Processed Columns
+                        </div>
+
+                        <div class="stat-value">
+                            {{ processed_columns }}
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- TARGET -->
+
+                <section class="section">
+
+                    <div class="section-title">
+
+                        <h2>
+                            Target Variable
+                        </h2>
+
+                    </div>
+
+
+                    <div class="target-box">
+
+                        The system identified:
+
+                        <strong>
+                            {{ target }}
+                        </strong>
+
+                        as the target variable for prediction.
+
+                    </div>
+
+                </section>
+
+
+                <!-- PREPROCESSING STATUS -->
+
+                <section class="section">
+
+                    <div class="section-title">
+
+                        <h2>
+                            Preprocessing Summary
+                        </h2>
+
+                        <span style="color:#64748b;font-size:12px;">
+                            Automatic processing
+                        </span>
+
+                    </div>
+
+
+                    <div class="status-grid">
+
+
+                        <div class="status">
+
+                            <h3>
+                                Missing Values
+                            </h3>
+
+                            <p>
+
+                                Before preprocessing:
+
+                                <strong>
+                                    {{ missing_before }}
+                                </strong>
+
+                            </p>
+
+                            <p>
+
+                                After preprocessing:
+
+                                <span class="success">
+                                    {{ missing_after }}
+                                </span>
+
+                            </p>
+
+                        </div>
+
+
+                        <div class="status">
+
+                            <h3>
+                                Duplicate Records
+                            </h3>
+
+                            <p>
+
+                                Records removed:
+
+                                <strong>
+                                    {{ duplicates_removed }}
+                                </strong>
+
+                            </p>
+
+                        </div>
+
+
+                        <div class="status">
+
+                            <h3>
+                                Categorical Features
+                            </h3>
+
+                            <p>
+
+                                Columns encoded:
+
+                                <strong>
+                                    {{ categorical_columns|length }}
+                                </strong>
+
+                            </p>
+
+                        </div>
+
+
+                        <div class="status">
+
+                            <h3>
+                                Processed Dataset
+                            </h3>
+
+                            <p class="success">
+                                ✓ Saved successfully
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+                </section>
+
+
+                <!-- CATEGORICAL COLUMNS -->
+
+                <section class="section">
+
+                    <div class="section-title">
+
+                        <h2>
+                            Encoded Categorical Features
+                        </h2>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        {% if categorical_columns %}
+
+                            <div class="table-wrapper">
+
+                                <table>
+
+                                    <thead>
+
+                                        <tr>
+
+                                            <th>
+                                                #
+                                            </th>
+
+                                            <th>
+                                                Feature
+                                            </th>
+
+                                            <th>
+                                                Status
+                                            </th>
+
+                                        </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                        {% for column in categorical_columns %}
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ forloop.counter }}
+                                                </td>
+
+                                                <td>
+                                                    <strong>
+                                                        {{ column }}
+                                                    </strong>
+                                                </td>
+
+                                                <td>
+
+                                                    <span class="badge">
+                                                        Encoded
+                                                    </span>
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        {% else %}
+
+                            <p style="color:#64748b;">
+                                No categorical columns required encoding.
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+
+                <!-- TARGET MAPPING -->
+
+                {% if target_mapping %}
+
+                    <section class="section">
+
+                        <div class="section-title">
+
+                            <h2>
+                                Target Encoding
+                            </h2>
+
+                        </div>
+
+
+                        <div class="card">
+
+                            <div class="table-wrapper">
+
+                                <table>
+
+                                    <thead>
+
+                                        <tr>
+
+                                            <th>
+                                                Encoded Value
+                                            </th>
+
+                                            <th>
+                                                Original Value
+                                            </th>
+
+                                        </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                        {% for value, label in target_mapping.items %}
+
+                                            <tr>
+
+                                                <td>
+                                                    <span class="badge">
+                                                        {{ value }}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    {{ label }}
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+
+                <!-- PROCESSED COLUMNS -->
+
+                <section class="section">
+
+                    <div class="section-title">
+
+                        <h2>
+                            Final Feature Set
+                        </h2>
+
+                        <span style="color:#64748b;font-size:12px;">
+                            {{ processed_columns }} columns ready
+                        </span>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="table-wrapper">
+
+                            <table>
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            #
+                                        </th>
+
+                                        <th>
+                                            Feature
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {% for column in processed_columns_list %}
+
+                                        <tr>
+
+                                            <td>
+                                                {{ forloop.counter }}
+                                            </td>
+
+                                            <td>
+                                                {{ column }}
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- NEXT STEP -->
+
+                <div class="next-card">
+
+                    <div>
+
+                        <h3>
+                            Ready for Model Training?
+                        </h3>
+
+                        <p>
+                            The dataset is now prepared. The next stage is
+                            to train and compare machine-learning models.
+                        </p>
+
+                    </div>
+
+
+                    <a
+                        href="#"
+                        class="next-button"
+                    >
+                        Train Models →
+                    </a>
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="card" style="text-align:center;padding:60px 20px;">
+
+                    <div style="font-size:45px;margin-bottom:15px;">
+                        ⚙️
+                    </div>
+
+                    <h2 style="margin-bottom:10px;">
+                        No Dataset Available
+                    </h2>
+
+                    <p style="color:#64748b;">
+                        Please upload a CSV dataset from the dashboard
+                        before starting preprocessing.
+                    </p>
+
+                    <br>
+
+                    <a
+                        href="/"
+                        class="next-button"
+                    >
+                        ← Upload Dataset
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+
+            <footer>
+
+                ML Prediction Engine • Predictive Analytics System
+
+                <br><br>
+
+                © 2026 All rights reserved.
+
+            </footer>
+
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+
+</html>
