@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Individual Learner Prediction | ML Prediction Engine</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f4f7fb; color: #1e293b; margin: 0; }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background: linear-gradient(180deg, #111827, #172554); color: white; padding: 25px 16px; position: fixed; left: 0; top: 0; bottom: 0; overflow-y: auto; }
+        .logo { display: flex; align-items: center; gap: 12px; padding: 10px; margin-bottom: 35px; }
+        .logo-icon { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5, #06b6d4); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .logo-text { font-size: 17px; font-weight: 700; }
+        .menu-title { font-size: 11px; color: #94a3b8; margin: 20px 10px 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; margin: 5px 0; border-radius: 10px; color: #cbd5e1; text-decoration: none; font-size: 14px; }
+        .nav-item:hover, .nav-item.active { background: linear-gradient(90deg, #4f46e5, #2563eb); color: white; }
+        .nav-icon { width: 22px; text-align: center; }
+        .nav-placeholder { cursor: default; opacity: .72; }
+        .nav-placeholder small { display: block; color: #94a3b8; font-size: 10px; }
+        .main { margin-left: 250px; width: calc(100% - 250px); min-height: 100vh; }
+        .content { max-width: 900px; margin: 0 auto; padding: 30px; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+        label { display: block; margin: 12px 0 6px; font-weight: bold; }
+        select, button { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; }
+        button { margin-top: 18px; background: #2563eb; color: white; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .error { background: #fef2f2; color: #991b1b; padding: 15px; border-radius: 10px; }
+        .risk { font-size: 22px; font-weight: bold; }
+        @media (max-width: 800px) { .sidebar { width: 210px; } .main { margin-left: 210px; width: calc(100% - 210px); } }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include "core/sidebar.html" %}
+    <main class="main"><div class="content">
+        <h1>Individual Learner Prediction</h1>
+        <p>Uses early-warning information available at the experimental Day {{ cutoff_day }} cutoff.</p>
+        {% if error %}<div class="error"><strong>Error:</strong> {{ error }}</div>{% endif %}
+        <div class="card"><form method="post">{% csrf_token %}
+            <label for="learner">Learner/course/presentation</label>
+            <select id="learner" name="selection" required onchange="copySelection(this)"><option value="">Select a learner</option>{% for option in learner_options %}<option value="{{ option.id_student }}|{{ option.code_module }}|{{ option.code_presentation }}">{{ option.id_student }} - {{ option.code_module }} - {{ option.code_presentation }}</option>{% endfor %}</select>
+            <input type="hidden" name="id_student" id="id_student"><input type="hidden" name="code_module" id="code_module"><input type="hidden" name="code_presentation" id="code_presentation">
+            <button type="submit">Predict dropout risk</button>
+        </form></div>
+        {% if prediction %}
+        <div class="card"><h2>Prediction</h2><p><strong>Student ID:</strong> {{ prediction.row.id_student }}</p><p><strong>Course/module:</strong> {{ prediction.row.code_module }}</p><p><strong>Presentation:</strong> {{ prediction.row.code_presentation }}</p><p><strong>Model:</strong> {{ prediction.selected_model }}</p><p><strong>Predicted class:</strong> {{ prediction.predicted_class }}</p><p><strong>Dropout probability:</strong> {{ prediction.dropout_probability|floatformat:4 }}</p><p class="risk"><strong>Initial project-defined risk band:</strong> {{ prediction.risk_band }}</p><p>Risk thresholds are configurable project thresholds and are not medically or scientifically validated.</p><h3>Early-warning signals</h3><table><tr><th>Registration offset</th><td>{{ prediction.row.registration_offset_days }}</td></tr><tr><th>Early assessment count</th><td>{{ prediction.row.early_assessment_count }}</td></tr><tr><th>Mean assessment score</th><td>{{ prediction.row.early_assessment_score_mean }}</td></tr><tr><th>Assessment score variation</th><td>{{ prediction.row.early_assessment_score_std }}</td></tr><tr><th>Scheduled assessment count</th><td>{{ prediction.row.early_assessment_scheduled_count }}</td></tr><tr><th>Submission rate</th><td>{{ prediction.row.early_assessment_submission_rate }}</td></tr></table></div>
+        <div class="card"><h2>Prediction Indicators</h2><p>These feature contributions show how the model indicators influenced this prediction. They do not establish causation.</p><h3>Higher-risk indicators</h3>{% if explanation.higher %}<table><tr><th>Feature</th><th>Observed value</th><th>Contribution</th></tr>{% for item in explanation.higher %}<tr><td>{{ item.feature }}</td><td>{{ item.value|floatformat:4 }}</td><td>{{ item.contribution|floatformat:4 }}</td></tr>{% endfor %}</table>{% else %}<p>No meaningful higher-risk indicators were found.</p>{% endif %}<h3>Lower-risk indicators</h3>{% if explanation.lower %}<table><tr><th>Feature</th><th>Observed value</th><th>Contribution</th></tr>{% for item in explanation.lower %}<tr><td>{{ item.feature }}</td><td>{{ item.value|floatformat:4 }}</td><td>{{ item.contribution|floatformat:4 }}</td></tr>{% endfor %}</table>{% else %}<p>No meaningful lower-risk indicators were found.</p>{% endif %}</div>
+        {% endif %}
+    </div></main>
+</div>
+<script>
+function copySelection(select) {
+    const values = select.value.split("|");
+    document.getElementById("id_student").value = values[0] || "";
+    document.getElementById("code_module").value = values[1] || "";
+    document.getElementById("code_presentation").value = values[2] || "";
+}
+</script>
+</body>
+</html>

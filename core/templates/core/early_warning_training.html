@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Early-Warning Training | ML Prediction Engine</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f4f7fb; color: #1e293b; margin: 0; }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background: linear-gradient(180deg, #111827, #172554); color: white; padding: 25px 16px; position: fixed; left: 0; top: 0; bottom: 0; overflow-y: auto; }
+        .logo { display: flex; align-items: center; gap: 12px; padding: 10px; margin-bottom: 35px; }
+        .logo-icon { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5, #06b6d4); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .logo-text { font-size: 17px; font-weight: 700; }
+        .menu-title { font-size: 11px; color: #94a3b8; margin: 20px 10px 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; margin: 5px 0; border-radius: 10px; color: #cbd5e1; text-decoration: none; font-size: 14px; }
+        .nav-item:hover, .nav-item.active { background: linear-gradient(90deg, #4f46e5, #2563eb); color: white; }
+        .nav-icon { width: 22px; text-align: center; }
+        .nav-placeholder { cursor: default; opacity: .72; }
+        .nav-placeholder small { display: block; color: #94a3b8; font-size: 10px; }
+        .main { margin-left: 250px; width: calc(100% - 250px); min-height: 100vh; }
+        .content { max-width: 1100px; margin: 0 auto; padding: 30px; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .value { font-size: 24px; font-weight: bold; margin-top: 8px; }
+        .label { color: #64748b; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        th { background: #f8fafc; }
+        .error { background: #fef2f2; color: #991b1b; padding: 15px; border-radius: 10px; }
+        code { overflow-wrap: anywhere; }
+        @media (max-width: 800px) { .sidebar { width: 210px; } .main { margin-left: 210px; width: calc(100% - 210px); } .stats { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include "core/sidebar.html" %}
+    <main class="main">
+        <div class="content">
+            <h1>Early-Warning Model Training</h1>
+            <p>Experimental prediction point: Day {{ cutoff_day }}. This cutoff is not claimed to be universally optimal.</p>
+            <p><a href="{% url 'individual_prediction' %}">Open individual learner prediction</a></p>
+            {% if error %}<div class="error"><strong>Error:</strong> {{ error }}</div>{% endif %}
+            {% if success %}
+            <div class="stats">
+                <div class="card"><div class="label">Dataset size</div><div class="value">{{ total_samples }}</div></div>
+                <div class="card"><div class="label">Dropout count</div><div class="value">{{ dropout_count }}</div></div>
+                <div class="card"><div class="label">Non-dropout count</div><div class="value">{{ non_dropout_count }}</div></div>
+                <div class="card"><div class="label">Dropout percentage</div><div class="value">{{ dropout_percentage }}%</div></div>
+            </div>
+            <div class="card"><h2>Features used</h2><p><code>{{ feature_columns|join:", " }}</code></p><p>Training rows: {{ training_rows }} | Testing rows: {{ testing_rows }}</p></div>
+            <div class="card"><h2>Model comparison</h2><table><thead><tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>Weighted F1</th><th>ROC-AUC</th></tr></thead><tbody>{% for model in results %}<tr><td>{{ model.name }}</td><td>{{ model.accuracy }}%</td><td>{{ model.precision }}%</td><td>{{ model.recall }}%</td><td>{{ model.f1 }}%</td><td>{{ model.roc_auc }}%</td></tr>{% endfor %}</tbody></table></div>
+            <div class="card">
+                <h2>Early-Warning Model Diagnostics</h2>
+                <p>Held-out test-set size: {{ diagnostics.test_size }}</p>
+                <p>At the 0.50 diagnostic threshold: Precision {{ diagnostics.precision }}%, Recall {{ diagnostics.recall }}%, F1-score {{ diagnostics.f1 }}%, ROC-AUC {{ diagnostics.roc_auc }}%</p>
+                <p>True positives: {{ diagnostics.true_positives }} | False positives: {{ diagnostics.false_positives }} | True negatives: {{ diagnostics.true_negatives }} | False negatives: {{ diagnostics.false_negatives }}</p>
+                <p>False positive: predicted dropout risk but the observed target was non-dropout. False negative: predicted non-dropout but the observed target was dropout. These are evaluation outcomes, not proof of student behavior.</p>
+                <h3>Risk threshold analysis</h3>
+                <p>Thresholds 0.30 and 0.70 are current project-defined risk-band thresholds and have not been institutionally or operationally validated. No threshold is declared optimal.</p>
+                <table><tr><th>Threshold</th><th>Predicted positive</th><th>Precision</th><th>Recall</th><th>F1</th><th>TP</th><th>FP</th><th>TN</th><th>FN</th></tr>{% for item in diagnostics.threshold_analysis %}<tr><td>{{ item.threshold }}</td><td>{{ item.predicted_positive_count }}</td><td>{{ item.precision }}%</td><td>{{ item.recall }}%</td><td>{{ item.f1 }}%</td><td>{{ item.true_positives }}</td><td>{{ item.false_positives }}</td><td>{{ item.true_negatives }}</td><td>{{ item.false_negatives }}</td></tr>{% endfor %}</table>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+</body>
+</html>

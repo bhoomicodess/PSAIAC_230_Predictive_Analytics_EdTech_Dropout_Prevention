@@ -8,7 +8,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -28,6 +28,20 @@ from sklearn.metrics import (
 from .ml_engine import (
     load_dataset,
     detect_target_column,
+)
+from .early_warning_training import (
+    MODEL_ARTIFACT_FILENAME,
+    PREPROCESSING_ARTIFACT_FILENAME,
+    analyze_early_warning_thresholds,
+    explain_learner,
+    persist_selected_model,
+    predict_learner,
+    train_early_warning_models,
+)
+from .oulad_features import (
+    ASSESSMENT_CUTOFF_DAY,
+    EARLY_WARNING_DATASET_FILENAME,
+    generate_early_warning_dataset,
 )
 
 
@@ -68,6 +82,61 @@ def get_processed_dataset_path():
         get_data_directory(),
         "processed_dataset.csv"
     )
+
+
+def has_uploaded_dataset(request):
+
+    return bool(
+        request.session.get("generic_dataset_uploaded")
+        and os.path.exists(get_dataset_path())
+    )
+
+
+def get_current_dataset_context(request):
+
+    if not has_uploaded_dataset(request):
+        return {}
+
+    dataset_path = get_dataset_path()
+    df = load_dataset(dataset_path)
+
+    return {
+        "rows": int(df.shape[0]),
+        "columns": int(df.shape[1]),
+        "column_names": list(df.columns),
+        "data_types": {
+            column: str(dtype)
+            for column, dtype in df.dtypes.items()
+        },
+        "missing_values": {
+            column: int(value)
+            for column, value in df.isnull().sum().items()
+        },
+        "target": detect_target_column(df),
+        "dataset_name": request.session.get(
+            "generic_dataset_name",
+            "uploaded_dataset.csv",
+        ),
+        "dataset_available": True,
+    }
+
+
+def get_early_warning_dataset_path():
+
+    return os.path.join(
+        get_data_directory(),
+        EARLY_WARNING_DATASET_FILENAME
+    )
+
+
+def get_early_warning_artifact_directory():
+
+    artifact_directory = os.path.join(
+        get_data_directory(),
+        "early_warning_artifacts",
+    )
+    os.makedirs(artifact_directory, exist_ok=True)
+    return artifact_directory
 
 
 def generate_roc_curve_image(y_true, probabilities, model_name):
@@ -141,7 +210,7 @@ def generate_roc_curve_image(y_true, probabilities, model_name):
 
 def upload_dataset(request):
 
-    context = {}
+    context = get_current_dataset_context(request)
 
     if request.method == "POST":
 
@@ -261,8 +330,16 @@ def upload_dataset(request):
             # -------------------------------------------------
 
             context["target"] = target
+            context["dataset_name"] = uploaded_file.name
 
             context["success"] = True
+            request.session["generic_dataset_uploaded"] = True
+            request.session["generic_dataset_name"] = uploaded_file.name
+            request.session.modified = True
+
+            processed_path = get_processed_dataset_path()
+            if os.path.exists(processed_path):
+                os.remove(processed_path)
 
         except Exception as e:
 
@@ -275,6 +352,23 @@ def upload_dataset(request):
         "core/upload.html",
         context
     )
+
+
+def remove_dataset(request):
+
+    if request.method == "POST":
+        request.session.pop("generic_dataset_uploaded", None)
+        request.session.pop("generic_dataset_name", None)
+        request.session.modified = True
+
+        for path in (
+            get_dataset_path(),
+            get_processed_dataset_path(),
+        ):
+            if os.path.exists(path):
+                os.remove(path)
+
+    return redirect("upload_dataset")
 
 
 # =========================================================
@@ -291,12 +385,11 @@ def data_preprocessing(request):
     # Check uploaded dataset
     # -----------------------------------------------------
 
-    if not os.path.exists(
-        dataset_path
-    ):
+    if not has_uploaded_dataset(request) or not os.path.exists(dataset_path):
 
         context["error"] = (
-            "Please upload a dataset first."
+            "No Dataset Uploaded. Please upload a CSV dataset "
+            "from the Dashboard before starting preprocessing."
         )
 
         return render(
@@ -542,13 +635,14 @@ def model_training(request):
     # Check processed dataset
     # -----------------------------------------------------
 
-    if not os.path.exists(
-        processed_path
+    if (
+        not has_uploaded_dataset(request)
+        or not os.path.exists(processed_path)
     ):
 
         context["error"] = (
-            "Please upload and preprocess "
-            "the dataset first."
+            "No Dataset Uploaded. Please upload a CSV dataset "
+            "from the Dashboard before training a model."
         )
 
         return render(
@@ -756,7 +850,6 @@ def model_training(request):
                 zero_division=0
             )
 
-<<<<<<< HEAD
             roc_auc = None
             roc_curve_image = None
 
@@ -797,8 +890,6 @@ def model_training(request):
                 roc_auc = None
                 roc_curve_image = None
 
-=======
->>>>>>> origin/main
             results.append({
 
                 "name": model_name,
@@ -823,7 +914,6 @@ def model_training(request):
                     2
                 ),
 
-<<<<<<< HEAD
                 "roc_auc": round(
                     roc_auc * 100,
                     2
@@ -831,8 +921,6 @@ def model_training(request):
 
                 "roc_curve_image": roc_curve_image,
 
-=======
->>>>>>> origin/main
             })
 
         # =================================================
@@ -862,6 +950,15 @@ def model_training(request):
 
         context["testing_records"] = (
             len(X_test)
+        )
+
+        # Keep the names expected by the existing training template.
+        context["training_rows"] = (
+            context["training_records"]
+        )
+
+        context["testing_rows"] = (
+            context["testing_records"]
         )
 
         context["feature_count"] = (
@@ -903,3 +1000,94 @@ def model_training(request):
         "core/model_training.html",
         context
     )
+
+
+def early_warning_training(request):
+
+    context = {
+        "cutoff_day": ASSESSMENT_CUTOFF_DAY,
+    }
+
+    try:
+        dataset_path = get_early_warning_dataset_path()
+        generate_early_warning_dataset(
+            get_data_directory(),
+            dataset_path,
+            assessment_cutoff_day=ASSESSMENT_CUTOFF_DAY,
+        )
+        context.update(train_early_warning_models(dataset_path))
+        context["diagnostics"] = analyze_early_warning_thresholds(dataset_path)
+        context.update(
+            persist_selected_model(
+                dataset_path,
+                get_early_warning_artifact_directory(),
+            )
+        )
+        context["success"] = True
+    except Exception as error:
+        context["error"] = f"Could not train early-warning models: {error}"
+
+    return render(
+        request,
+        "core/early_warning_training.html",
+        context,
+    )
+
+
+def individual_prediction(request):
+
+    context = {
+        "cutoff_day": ASSESSMENT_CUTOFF_DAY,
+    }
+    dataset_path = get_early_warning_dataset_path()
+
+    try:
+        if not os.path.exists(dataset_path):
+            generate_early_warning_dataset(
+                get_data_directory(),
+                dataset_path,
+                assessment_cutoff_day=ASSESSMENT_CUTOFF_DAY,
+            )
+        table = pd.read_csv(dataset_path)
+        options = table[
+            ["id_student", "code_module", "code_presentation"]
+        ].drop_duplicates().sort_values(
+            ["id_student", "code_module", "code_presentation"]
+        )
+        context["learner_options"] = options.to_dict("records")
+
+        artifact_directory = get_early_warning_artifact_directory()
+        model_path = os.path.join(artifact_directory, MODEL_ARTIFACT_FILENAME)
+        preprocessing_path = os.path.join(
+            artifact_directory,
+            PREPROCESSING_ARTIFACT_FILENAME,
+        )
+        if not os.path.exists(model_path) or not os.path.exists(preprocessing_path):
+            persist_selected_model(dataset_path, artifact_directory)
+
+        if request.method == "POST":
+            learner_key = (
+                request.POST.get("id_student", ""),
+                request.POST.get("code_module", ""),
+                request.POST.get("code_presentation", ""),
+            )
+            context["prediction"] = predict_learner(
+                table,
+                learner_key,
+                artifact_directory,
+            )
+            context["explanation"] = explain_learner(
+                table,
+                learner_key,
+                artifact_directory,
+            )
+    except (ValueError, FileNotFoundError) as error:
+        context["error"] = str(error)
+
+    return render(
+        request,
+        "core/individual_prediction.html",
+        context,
+    )
+    analyze_early_warning_thresholds,
+    explain_learner,

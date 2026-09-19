@@ -596,7 +596,8 @@
          SIDEBAR
     ========================== -->
 
-    <aside class="sidebar">
+    {% include "core/sidebar.html" %}
+    {% if False %}<aside class="sidebar">
 
         <div class="logo">
 
@@ -616,43 +617,43 @@
         </div>
 
 
-        <a href="#" class="nav-item active">
+        <a href="{% url 'upload_dataset' %}" class="nav-item active">
             <span class="nav-icon">⌂</span>
             <span>Dashboard</span>
         </a>
 
 
-        <a href="#upload" class="nav-item">
+        <a href="{% url 'upload_dataset' %}" class="nav-item">
             <span class="nav-icon">↑</span>
             <span>Upload Dataset</span>
         </a>
 
 
-        <a href="#analysis" class="nav-item">
+        <a href="{% url 'upload_dataset' %}" class="nav-item">
             <span class="nav-icon">▦</span>
             <span>Dataset Analysis</span>
         </a>
 
 
-        <a href="#preprocessing" class="nav-item">
+        <a href="{% url 'data_preprocessing' %}" class="nav-item">
             <span class="nav-icon">⚙</span>
             <span>Data Preprocessing</span>
         </a>
 
 
-        <a href="#training" class="nav-item">
+        <a href="{% url 'model_training' %}" class="nav-item">
             <span class="nav-icon">◆</span>
             <span>Train Model</span>
         </a>
 
 
-        <a href="#prediction" class="nav-item">
+        <a href="{% url 'individual_prediction' %}" class="nav-item">
             <span class="nav-icon">◎</span>
             <span>Make Predictions</span>
         </a>
 
 
-        <a href="#recommendations" class="nav-item">
+        <a href="{% url 'early_warning_training' %}" class="nav-item">
             <span class="nav-icon">💡</span>
             <span>Recommendations</span>
         </a>
@@ -686,7 +687,7 @@
             <span>Help</span>
         </a>
 
-    </aside>
+    </aside>{% endif %}
 
 
     <!-- =========================
@@ -934,7 +935,19 @@
                         ✓ Dataset analysed successfully.
                     </strong>
 
-                    Your dataset has been successfully loaded and analysed.
+                    Current dataset:
+                    <strong>{{ dataset_name }}</strong>
+                    has been successfully loaded and analysed.
+
+                    <form method="POST"
+                          action="{% url 'remove_dataset' %}"
+                          style="display:inline; margin-left:16px;">
+                        {% csrf_token %}
+                        <button type="submit"
+                                style="border:0; border-radius:7px; padding:8px 12px; background:#b91c1c; color:white; cursor:pointer;">
+                            Remove Dataset
+                        </button>
+                    </form>
 
                 </div>
 

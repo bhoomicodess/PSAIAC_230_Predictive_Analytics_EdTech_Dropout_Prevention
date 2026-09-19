@@ -1,0 +1,90 @@
+<aside class="sidebar app-sidebar" aria-label="Primary navigation">
+    <div class="logo"><div class="logo-icon">ML</div><div class="logo-text">ML Prediction Engine</div></div>
+    <div class="menu-title">Main Menu</div>
+    <a href="{% url 'upload_dataset' %}" class="nav-item{% if request.path == '/' %} active{% endif %}"><span class="nav-icon">⌂</span><span>Dashboard</span></a>
+    <span class="nav-item nav-placeholder" aria-disabled="true" title="Dataset Analysis is coming soon"><span class="nav-icon">▦</span><span>Dataset Analysis <small>Coming Soon</small></span></span>
+    <a href="{% url 'data_preprocessing' %}" class="nav-item{% if request.path == '/preprocessing/' %} active{% endif %}"><span class="nav-icon">⚙</span><span>Data Preprocessing</span></a>
+    <a href="{% url 'model_training' %}" class="nav-item{% if request.path == '/model-training/' or request.path == '/early-warning-training/' %} active{% endif %}"><span class="nav-icon">◆</span><span>Train Model</span></a>
+    <a href="{% url 'early_warning_training' %}" class="nav-subitem{% if request.path == '/early-warning-training/' %} active{% endif %}">Early-Warning Training</a>
+    <a href="{% url 'individual_prediction' %}" class="nav-item{% if request.path == '/individual-prediction/' %} active{% endif %}"><span class="nav-icon">◎</span><span>Make Predictions</span></a>
+    <span class="nav-item nav-placeholder" aria-disabled="true" title="Recommendations are coming soon"><span class="nav-icon">💡</span><span>Recommendations <small>Coming Soon</small></span></span>
+    <span class="nav-item nav-placeholder" aria-disabled="true" title="Model Performance is coming soon"><span class="nav-icon">▥</span><span>Model Performance <small>Coming Soon</small></span></span>
+    <span class="nav-item nav-placeholder" aria-disabled="true" title="Reports are coming soon"><span class="nav-icon">▤</span><span>Reports <small>Coming Soon</small></span></span>
+    <div class="menu-title">System</div>
+    <span class="nav-item nav-placeholder" aria-disabled="true" title="Settings are coming soon"><span class="nav-icon">⚙</span><span>Settings <small>Coming Soon</small></span></span>
+    <span class="nav-item nav-placeholder" aria-disabled="true" title="Help is coming soon"><span class="nav-icon">?</span><span>Help <small>Coming Soon</small></span></span>
+</aside>
+<style>
+    .app-sidebar {
+        width: 250px !important;
+        min-width: 250px !important;
+        height: 100vh;
+        overflow-y: auto;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 10;
+        padding: 25px 16px;
+        background: linear-gradient(180deg, #111827, #172554) !important;
+        color: white !important;
+    }
+    .app-sidebar .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        margin-bottom: 35px;
+        font-size: 17px;
+        font-weight: 700;
+    }
+    .app-sidebar .logo-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #4f46e5, #06b6d4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    .app-sidebar .logo-text { font-size: 17px; font-weight: 700; }
+    .app-sidebar .menu-title {
+        margin: 20px 10px 10px;
+        color: #94a3b8;
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .app-sidebar ~ .main {
+        margin-left: 250px !important;
+        width: calc(100% - 250px) !important;
+        min-width: 0;
+    }
+    .app-sidebar .nav-item { display: flex !important; }
+    .app-sidebar .nav-item,
+    .app-sidebar .nav-subitem {
+        box-sizing: border-box;
+    }
+    .app-sidebar .nav-item {
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 13px 14px;
+        margin: 5px 0;
+        border-radius: 10px;
+        color: #cbd5e1;
+        font-size: 14px;
+        text-decoration: none;
+    }
+    .app-sidebar .nav-item:hover,
+    .app-sidebar .nav-item.active {
+        background: linear-gradient(90deg, #4f46e5, #2563eb) !important;
+        color: white !important;
+    }
+    .app-sidebar .nav-icon { width: 22px; text-align: center; font-size: 16px; }
+    .app-sidebar .nav-subitem { display: block; margin: -2px 0 7px 48px; padding: 4px 8px; color: #94a3b8; font-size: 11px; text-decoration: none; }
+    .app-sidebar .nav-subitem:hover, .app-sidebar .nav-subitem.active { color: white; }
+    .app-sidebar .nav-placeholder { cursor: default; opacity: .72; }
+    .app-sidebar .nav-placeholder small { display: block; color: #94a3b8; font-size: 10px; }
+</style>
