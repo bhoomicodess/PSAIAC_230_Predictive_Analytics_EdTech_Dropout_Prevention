@@ -1,5 +1,6 @@
+{% load static %}
 <aside class="sidebar app-sidebar" aria-label="Primary navigation">
-    <div class="logo"><div class="logo-icon">ML</div><div class="logo-text">ML Prediction Engine</div></div>
+    <div class="logo"><img class="logo-image" src="{% static 'core/edtech-analytics-logo.svg' %}" alt="PSAIAC 230 EdTech"><div class="logo-text">ML Prediction Engine</div></div>
     <div class="menu-title">Main Menu</div>
     <a href="{% url 'upload_dataset' %}" class="nav-item{% if request.path == '/' %} active{% endif %}"><span class="nav-icon">⌂</span><span>Dashboard</span></a>
     <span class="nav-item nav-placeholder" aria-disabled="true" title="Dataset Analysis is coming soon"><span class="nav-icon">▦</span><span>Dataset Analysis <small>Coming Soon</small></span></span>
@@ -37,6 +38,13 @@
         margin-bottom: 35px;
         font-size: 17px;
         font-weight: 700;
+    }
+    .app-sidebar .logo-image {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        border-radius: 12px;
+        display: block;
     }
     .app-sidebar .logo-icon {
         width: 42px;
