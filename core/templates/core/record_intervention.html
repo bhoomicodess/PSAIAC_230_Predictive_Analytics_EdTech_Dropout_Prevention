@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Intervention | ML Prediction Engine</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin:0; background:#f4f7fb; color:#1e293b; font-family:Arial,sans-serif; }
+        .app { display:flex; min-height:100vh; }
+        .main { margin-left:250px; width:calc(100% - 250px); min-height:100vh; }
+        .content { max-width:850px; margin:0 auto; padding:30px; }
+        .page-header h1 { margin:0; color:#0f172a; font-size:28px; }
+        .muted { color:#64748b; }
+        .card { padding:22px; margin-top:18px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; }
+        .identity { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+        .identity div { padding:12px; border-radius:6px; background:#f8fafc; overflow-wrap:anywhere; }
+        .identity strong { display:block; margin-bottom:5px; color:#64748b; font-size:12px; }
+        .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+        label { display:grid; gap:6px; font-weight:700; }
+        input,select,textarea { width:100%; min-height:42px; padding:9px; border:1px solid #cbd5e1; border-radius:6px; font:inherit; }
+        textarea { min-height:120px; resize:vertical; }
+        .wide { grid-column:1/-1; }
+        .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+        .button { min-height:42px; padding:10px 15px; border:1px solid #1d4ed8; border-radius:6px; background:#1d4ed8; color:#fff; text-decoration:none; font:inherit; font-weight:700; cursor:pointer; }
+        .button.secondary { color:#1d4ed8; background:#fff; }
+        :focus-visible { outline:3px solid #f59e0b; outline-offset:2px; }
+        .error { padding:12px 14px; border:1px solid #fecaca; border-radius:6px; color:#991b1b; background:#fef2f2; }
+        .risk { font-weight:700; }
+        @media (max-width:800px) { .main { margin-left:0; width:100%; } .content { padding:20px; } }
+        @media (max-width:560px) { .content { padding:14px; } .identity,.form-grid { grid-template-columns:1fr; } .wide { grid-column:auto; } .button { width:100%; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include "core/sidebar.html" %}
+    <main class="main"><div class="content">
+        <header class="page-header"><h1>Record Intervention</h1><p class="muted">Document a support action for this learner.</p></header>
+        {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+        <section class="card" aria-labelledby="learner-heading">
+            <h2 id="learner-heading">Student</h2>
+            <div class="identity">
+                <div><strong>Student ID</strong>{{ learner_key.0 }}</div>
+                <div><strong>Module</strong>{{ learner_key.1 }}</div>
+                <div><strong>Presentation</strong>{{ learner_key.2 }}</div>
+            </div>
+            {% if prediction %}<p class="risk">Current assessed risk: {{ prediction.risk_band|upper }} · {{ risk_percentage|floatformat:0 }}%</p>{% endif %}
+        </section>
+        <section class="card" aria-labelledby="form-heading">
+            <h2 id="form-heading">Support action</h2>
+            <form method="post" id="intervention-form">{% csrf_token %}
+                <input type="hidden" name="id_student" value="{{ learner_key.0 }}">
+                <input type="hidden" name="code_module" value="{{ learner_key.1 }}">
+                <input type="hidden" name="code_presentation" value="{{ learner_key.2 }}">
+                <div class="form-grid">
+                    <label for="intervention-type">Intervention Type
+                        <select id="intervention-type" name="intervention_type" required>
+                            <option value="">Select a type</option>
+                            {% for value, label in intervention_types %}<option value="{{ value }}" {% if form_values.intervention_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <label for="priority">Priority
+                        <select id="priority" name="priority" required>
+                            <option value="">Select a priority</option>
+                            {% for value, label in priorities %}<option value="{{ value }}" {% if form_values.priority == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <label for="follow-up-date">Follow-up Date
+                        <input id="follow-up-date" name="follow_up_date" type="date" value="{{ form_values.follow_up_date }}">
+                    </label>
+                    <label class="wide" for="notes">Notes
+                        <textarea id="notes" name="notes" maxlength="10000" placeholder="Record the agreed support action and context.">{{ form_values.notes }}</textarea>
+                    </label>
+                </div>
+                <p class="muted">Risk probability is captured automatically from the current persisted model assessment.</p>
+                <div class="actions"><button class="button" type="submit" id="save-button">Record Intervention</button><a class="button secondary" href="{% url 'individual_prediction' %}?id_student={{ learner_key.0|urlencode }}&amp;code_module={{ learner_key.1|urlencode }}&amp;code_presentation={{ learner_key.2|urlencode }}">Cancel</a></div>
+                <p id="saving-message" class="muted" role="status" hidden>Saving intervention...</p>
+            </form>
+        </section>
+    </div></main>
+</div>
+<script>
+document.getElementById("intervention-form").addEventListener("submit", function () {
+    const button = document.getElementById("save-button");
+    button.disabled = true;
+    button.textContent = "Saving...";
+    document.getElementById("saving-message").hidden = false;
+});
+</script>
+</body>
+</html>

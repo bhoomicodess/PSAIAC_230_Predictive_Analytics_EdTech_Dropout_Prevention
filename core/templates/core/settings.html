@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings</title>
+    <style>
+        body { margin: 0; background: #f8fafc; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; }
+        .app { display: flex; min-height: 100vh; }
+        {% include "core/sidebar.html" %}
+        .main { flex: 1; padding: 32px; }
+        .content { max-width: 800px; margin: 0 auto; }
+        .card {
+            background: white;
+            border: 1px solid #dfe7f1;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+            padding: 28px;
+        }
+        h1 { margin-top: 0; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+        .row { display: flex; justify-content: space-between; gap: 16px; border-bottom: 1px solid #edf2f7; padding: 14px 0; }
+        .label { color: #64748b; font-weight: 600; }
+        .value { font-weight: 700; }
+        .logout-link { display: inline-block; margin-top: 18px; color: #b91c1c; font-weight: 700; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        {% include "core/sidebar.html" %}
+        <main class="main">
+            <div class="content">
+                <div class="card">
+                    <h1>Account</h1>
+                    <div class="row"><span class="label">Username</span><span class="value">{{ username }}</span></div>
+                    <div class="row"><span class="label">Role</span><span class="value">{{ user_role }}</span></div>
+                    <a class="logout-link" href="{% url 'logout' %}">Logout</a>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

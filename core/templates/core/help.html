@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help</title>
+    <style>
+        body { margin: 0; background: #f8fafc; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; }
+        .app { display: flex; min-height: 100vh; }
+        {% include "core/sidebar.html" %}
+        .main { flex: 1; padding: 32px; }
+        .content { max-width: 900px; margin: 0 auto; }
+        .card {
+            background: white;
+            border: 1px solid #dfe7f1;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+            padding: 28px;
+        }
+        h1 { margin-top: 0; }
+        ul { margin: 10px 0 0 20px; color: #334155; line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        {% include "core/sidebar.html" %}
+        <main class="main">
+            <div class="content">
+                <div class="card">
+                    <h1>Help</h1>
+                    <p>Use the dashboard to monitor early-warning risk, review learner support recommendations, and track intervention follow-up.</p>
+                    <ul>
+                        <li>Admins can prepare datasets, train models, and review reports.</li>
+                        <li>Educators can view learner risk, batch predictions, recommendations, interventions, and model performance.</li>
+                        <li>Students can view their own learner record and recommendations only.</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
