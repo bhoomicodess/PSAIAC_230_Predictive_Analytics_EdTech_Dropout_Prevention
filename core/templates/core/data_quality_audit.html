@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Quality Audit | ML Prediction Engine</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1e293b;
+        }
+        .app { display: flex; min-height: 100vh; }
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        .metric {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 18px;
+        }
+        .metric h3 { margin: 10px 0 4px; font-size: 28px; }
+        .muted { color: #64748b; }
+        button {
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { background: #1d4ed8; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        th { background: #f8fafc; }
+        .table-wrap { overflow-x: auto; }
+        .error { color: #b91c1c; }
+        .note { background: #fff7ed; padding: 14px; border-radius: 8px; }
+        @media (max-width: 800px) {
+            .main { margin-left: 0; width: 100%; padding: 16px; }
+            .app { display: block; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include "core/sidebar.html" %}
+
+    <main class="main">
+        <header class="card">
+            <h1>Data Quality Audit</h1>
+            <p class="muted">
+                Validate source files, inspect data quality and review
+                potential Day-60 cutoff issues.
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit">Run Data Quality Audit</button>
+            </form>
+        </header>
+
+        {% if error %}
+        <div class="card error">
+            <strong>Audit failed:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="card">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if report %}
+        <section class="card">
+            <h2>Audit Summary</h2>
+            <div class="metrics">
+                <div class="metric">
+                    <span class="muted">Dataset records</span>
+                    <h3>{{ report.dropout_class_balance.total_students }}</h3>
+                </div>
+                <div class="metric">
+                    <span class="muted">Dropout students</span>
+                    <h3>{{ report.dropout_class_balance.dropout }}</h3>
+                    <p>{{ report.dropout_class_balance.dropout_percentage }}%</p>
+                </div>
+                <div class="metric">
+                    <span class="muted">Non-dropout students</span>
+                    <h3>{{ report.dropout_class_balance.non_dropout }}</h3>
+                    <p>{{ report.dropout_class_balance.non_dropout_percentage }}%</p>
+                </div>
+                <div class="metric">
+                    <span class="muted">Potential late submissions</span>
+                    <h3>{{ report.day60_submission_leakage.potential_late_submissions }}</h3>
+                    <p>Unique students: {{ report.day60_submission_leakage.unique_students_affected }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Source File Validation</h2>
+            <p>Status: <strong>{{ report.source_files.status|upper }}</strong></p>
+            <p>{{ report.source_files.message }}</p>
+        </section>
+
+        <section class="card">
+            <h2>Missing Values</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Source file</th><th>Rows</th><th>Missing cells</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for filename, details in report.missing_values.items %}
+                        <tr>
+                            <td>{{ filename }}</td>
+                            <td>{{ details.rows }}</td>
+                            <td>{{ details.missing_cells }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Duplicate Records</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Source file</th><th>Duplicates</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for filename, details in report.duplicate_records.items %}
+                        <tr>
+                            <td>{{ filename }}</td>
+                            <td>{{ details.duplicate_records|default_if_none:"N/A" }}</td>
+                            <td>{{ details.status }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Day-60 Submission Review</h2>
+            <p>{{ report.day60_submission_leakage.note }}</p>
+            <p class="note">
+                These are potential cutoff violations, not confirmed model
+                leakage. Review them before drawing conclusions.
+            </p>
+        </section>
+        {% else %}
+        <section class="card">
+            <h2>Ready to audit</h2>
+            <p class="muted">
+                Click “Run Data Quality Audit” to generate the latest
+                checks and display the results here.
+            </p>
+        </section>
+        {% endif %}
+    </main>
+</div>
+</body>
+</html>

@@ -3,6 +3,7 @@ from django.contrib.auth.views import LogoutView
 from django.urls import path
 
 from core import views
+from core.audit_views import data_quality_audit
 
 
 urlpatterns = [
@@ -142,5 +143,11 @@ urlpatterns = [
         "interventions/<int:intervention_id>/update/",
         views.update_intervention,
         name="update_intervention"
+    ),
+
+    path(
+        "data-quality-audit/",
+        data_quality_audit,
+        name="data_quality_audit"
     ),
 ]
