@@ -4,45 +4,45 @@
     <div class="logo"><img class="logo-image" src="{% static 'core/edtech-analytics-logo.svg' %}" alt="PSAIAC 230 EdTech"><div class="logo-text">ML Prediction Engine</div></div>
 
     <div class="menu-title">Overview</div>
-    <a href="{% url 'upload_dataset' %}" class="nav-item{% if request.path == '/' %} active{% endif %}"><span class="nav-icon">âŒ‚</span><span>Dashboard</span></a>
+    <a href="{% url 'upload_dataset' %}" class="nav-item{% if request.path == '/' %} active{% endif %}"><span class="nav-icon">&#8962;</span><span>Dashboard</span></a>
 
     {% if user_role == 'ADMIN' or user_role == 'EDUCATOR' %}
-        <a href="{% url 'student_risk_dashboard' %}" class="nav-item{% if request.path == '/student-risk-dashboard/' %} active{% endif %}"><span class="nav-icon">â–¥</span><span>Student Risk Dashboard</span></a>
+        <a href="{% url 'student_risk_dashboard' %}" class="nav-item{% if request.path == '/student-risk-dashboard/' %} active{% endif %}"><span class="nav-icon">&#9670;</span><span>Student Risk Dashboard</span></a>
     {% endif %}
 
     {% if user_role == 'ADMIN' %}
         <div class="menu-title">Data &amp; Models</div>
 
         <a href="{% url 'data_quality_audit' %}" class="nav-item{% if request.path == '/data-quality-audit/' %} active{% endif %}">
-            <span class="nav-icon">âœ“</span>
+            <span class="nav-icon">&#10003;</span>
             <span>Data Quality Audit</span>
         </a>
 
-        <a href="{% url 'data_preprocessing' %}" class="nav-item{% if request.path == '/preprocessing/' %} active{% endif %}"><span class="nav-icon">âš™</span><span>Data Preprocessing</span></a>
-        <a href="{% url 'model_training' %}" class="nav-item{% if request.path == '/model-training/' or request.path == '/early-warning-training/' %} active{% endif %}"><span class="nav-icon">â—†</span><span>Train Model</span></a>
+        <a href="{% url 'data_preprocessing' %}" class="nav-item{% if request.path == '/preprocessing/' %} active{% endif %}"><span class="nav-icon">&#9881;</span><span>Data Preprocessing</span></a>
+        <a href="{% url 'model_training' %}" class="nav-item{% if request.path == '/model-training/' or request.path == '/early-warning-training/' %} active{% endif %}"><span class="nav-icon">&#9670;</span><span>Train Model</span></a>
         <a href="{% url 'early_warning_training' %}" class="nav-subitem{% if request.path == '/early-warning-training/' %} active{% endif %}">Early-Warning Training</a>
-        <a href="{% url 'model_performance' %}" class="nav-item{% if request.path == '/model-performance/' %} active{% endif %}"><span class="nav-icon">â–¥</span><span>Model Performance</span></a>
+        <a href="{% url 'model_performance' %}" class="nav-item{% if request.path == '/model-performance/' %} active{% endif %}"><span class="nav-icon">&#9670;</span><span>Model Performance</span></a>
     {% elif user_role == 'EDUCATOR' %}
         <div class="menu-title">Monitoring</div>
-        <a href="{% url 'model_performance' %}" class="nav-item{% if request.path == '/model-performance/' %} active{% endif %}"><span class="nav-icon">â–¥</span><span>Model Performance</span></a>
+        <a href="{% url 'model_performance' %}" class="nav-item{% if request.path == '/model-performance/' %} active{% endif %}"><span class="nav-icon">&#9670;</span><span>Model Performance</span></a>
     {% else %}
         <div class="menu-title">My Support</div>
-        <a href="{% url 'individual_prediction' %}" class="nav-item{% if request.path == '/individual-prediction/' %} active{% endif %}"><span class="nav-icon">â—Ž</span><span>My Learner Profile</span></a>
-        <a href="{% url 'recommendations' %}" class="nav-item{% if request.path == '/recommendations/' %} active{% endif %}"><span class="nav-icon">ðŸ’¡</span><span>My Recommendations</span></a>
+        <a href="{% url 'individual_prediction' %}" class="nav-item{% if request.path == '/individual-prediction/' %} active{% endif %}"><span class="nav-icon">&#9678;</span><span>My Learner Profile</span></a>
+        <a href="{% url 'recommendations' %}" class="nav-item{% if request.path == '/recommendations/' %} active{% endif %}"><span class="nav-icon">&#128161;</span><span>My Recommendations</span></a>
     {% endif %}
 
     {% if user_role == 'ADMIN' or user_role == 'EDUCATOR' %}
         <div class="menu-title">Student Support</div>
-        <a href="{% url 'individual_prediction' %}" class="nav-item{% if request.path == '/individual-prediction/' %} active{% endif %}"><span class="nav-icon">â—Ž</span><span>Make Predictions</span></a>
-        <a href="{% url 'batch_prediction' %}" class="nav-item{% if request.path == '/batch-prediction/' %} active{% endif %}"><span class="nav-icon">â‡©</span><span>Batch Prediction</span></a>
-        <a href="{% url 'recommendations' %}" class="nav-item{% if request.path == '/recommendations/' %} active{% endif %}"><span class="nav-icon">ðŸ’¡</span><span>Recommendations</span></a>
-        <a href="{% url 'interventions' %}" class="nav-item{% if request.path|slice:':14' == '/interventions' %} active{% endif %}"><span class="nav-icon">âœ“</span><span>Interventions</span></a>
+        <a href="{% url 'individual_prediction' %}" class="nav-item{% if request.path == '/individual-prediction/' %} active{% endif %}"><span class="nav-icon">&#9678;</span><span>Make Predictions</span></a>
+        <a href="{% url 'batch_prediction' %}" class="nav-item{% if request.path == '/batch-prediction/' %} active{% endif %}"><span class="nav-icon">&#8649;</span><span>Batch Prediction</span></a>
+        <a href="{% url 'recommendations' %}" class="nav-item{% if request.path == '/recommendations/' %} active{% endif %}"><span class="nav-icon">&#128161;</span><span>Recommendations</span></a>
+        <a href="{% url 'interventions' %}" class="nav-item{% if request.path|slice:':14' == '/interventions' %} active{% endif %}"><span class="nav-icon">&#10003;</span><span>Interventions</span></a>
         <div class="menu-title">Reporting</div>
-        <a href="{% url 'reports' %}" class="nav-item{% if request.path == '/reports/' %} active{% endif %}"><span class="nav-icon">â–¤</span><span>Reports</span></a>
+        <a href="{% url 'reports' %}" class="nav-item{% if request.path == '/reports/' %} active{% endif %}"><span class="nav-icon">&#9635;</span><span>Reports</span></a>
     {% endif %}
 
     <div class="menu-title">System</div>
-    <a href="{% url 'settings' %}" class="nav-item{% if request.path == '/settings/' %} active{% endif %}"><span class="nav-icon">âš™</span><span>Settings</span></a>
+    <a href="{% url 'settings' %}" class="nav-item{% if request.path == '/settings/' %} active{% endif %}"><span class="nav-icon">&#9881;</span><span>Settings</span></a>
     <a href="{% url 'help' %}" class="nav-item{% if request.path == '/help/' %} active{% endif %}"><span class="nav-icon">?</span><span>Help</span></a>
 
     <div class="sidebar-user">
@@ -52,7 +52,7 @@
             <small>{{ user_role_display }}</small>
         </div>
     </div>
-    <a href="{% url 'logout' %}" class="nav-item logout-item"><span class="nav-icon">â†©</span><span>Logout</span></a>
+    <a href="{% url 'logout' %}" class="nav-item logout-item"><span class="nav-icon">&#8617;</span><span>Logout</span></a>
 </aside>
 <style>
     .app-sidebar {
