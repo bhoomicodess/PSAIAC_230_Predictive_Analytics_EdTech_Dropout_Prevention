@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile | ML Prediction Engine</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f4f7fb; color: #1e293b; margin: 0; }
+        .app { display: flex; min-height: 100vh; }
+        .main { margin-left: 250px; width: calc(100% - 250px); min-height: 100vh; }
+        .content { max-width: 1120px; margin: 0 auto; padding: 30px; }
+        .page-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:22px; }
+        .page-header h1 { margin:0; font-size:28px; color:#0f172a; }
+        .muted,.note { color:#64748b; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 22px; margin-bottom: 18px; }
+        .section-heading { margin:0 0 14px; font-size:19px; }
+        .identity { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+        .identity div { padding:12px; background:#f8fafc; border-radius:6px; }
+        .identity strong { display:block; font-size:12px; color:#64748b; margin-bottom:5px; }
+        .risk-panel { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+        .risk-level { font-weight:700; font-size:18px; }
+        .risk-high { color:#b91c1c; } .risk-medium { color:#a16207; } .risk-low { color:#15803d; }
+        .button { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:9px 14px; border:1px solid #1d4ed8; border-radius:6px; background:#1d4ed8; color:#fff; text-decoration:none; font-weight:700; cursor:pointer; }
+        .button.secondary { background:#fff; color:#1d4ed8; }
+        .button:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px solid #f59e0b; outline-offset:2px; }
+        .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; min-width:760px; border-collapse:collapse; }
+        th, td { padding:11px 10px; border-bottom:1px solid #e2e8f0; text-align:left; vertical-align:top; }
+        th { color:#475569; font-size:13px; }
+        .badge { display:inline-block; padding:4px 8px; border-radius:4px; font-weight:700; font-size:12px; background:#f1f5f9; color:#334155; }
+        .badge.overdue { color:#991b1b; background:#fee2e2; }
+        .success { padding:12px 14px; margin:0 0 14px; color:#166534; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; }
+        .error { padding:12px 14px; margin:0 0 14px; color:#991b1b; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; }
+        .edit-form { display:grid; grid-template-columns:repeat(3,minmax(130px,1fr)); gap:10px; align-items:end; }
+        .edit-form label { display:grid; gap:5px; font-size:12px; font-weight:700; }
+        .edit-form select,.edit-form input,.edit-form textarea { width:100%; min-height:39px; border:1px solid #cbd5e1; border-radius:6px; padding:8px; font:inherit; }
+        .edit-form textarea { min-height:70px; }
+        .empty-state { text-align:center; padding:30px 16px; color:#475569; }
+        @media (max-width: 800px) { .main { margin-left:0; width:100%; } .content { padding:20px; } }
+        @media (max-width: 560px) { .content { padding:14px; } .page-header { display:block; } .identity { grid-template-columns:1fr; } .edit-form { grid-template-columns:1fr; } .button { width:100%; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include "core/sidebar.html" %}
+    <main class="main"><div class="content">
+        <header class="page-header"><div><h1>Student Profile</h1><p class="muted">Day {{ cutoff_day }} early-warning assessment and learner support record.</p></div></header>
+        {% if intervention_saved %}<div class="success" role="status">✓ Intervention recorded successfully</div>{% endif %}
+        {% if intervention_updated %}<div class="success" role="status">Intervention update saved.</div>{% endif %}
+        {% if update_error %}<div class="error" role="alert">We couldn't update the intervention. Please try again.</div>{% endif %}
+        {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+        <section class="card" aria-labelledby="student-information-heading">
+            <h2 class="section-heading" id="student-information-heading">Student Information</h2>
+            <form method="post">{% csrf_token %}
+                <label for="learner">Learner, module and presentation</label>
+                <div class="actions" style="margin-top:0;align-items:center">
+                    <select id="learner" name="selection" required onchange="copySelection(this)" style="flex:1 1 300px;min-height:42px;border:1px solid #cbd5e1;border-radius:6px;padding:8px;font:inherit">
+                        <option value="">Select a learner</option>
+                        {% for option in learner_options %}<option value="{{ option.id_student }}|{{ option.code_module }}|{{ option.code_presentation }}" {% if prediction and option.id_student == prediction.row.id_student and option.code_module == prediction.row.code_module and option.code_presentation == prediction.row.code_presentation %}selected{% endif %}>{{ option.id_student }} - {{ option.code_module }} - {{ option.code_presentation }}</option>{% endfor %}
+                    </select>
+                    <button class="button" type="submit">Assess student</button>
+                </div>
+                <input type="hidden" name="id_student" id="id_student"><input type="hidden" name="code_module" id="code_module"><input type="hidden" name="code_presentation" id="code_presentation">
+            </form>
+            {% if prediction %}<div class="identity" style="margin-top:16px"><div><strong>Student ID</strong>{{ prediction.row.id_student }}</div><div><strong>Module</strong>{{ prediction.row.code_module }}</div><div><strong>Presentation</strong>{{ prediction.row.code_presentation }}</div></div>{% endif %}
+        </section>
+        {% if prediction %}
+        <section class="card" aria-labelledby="current-risk-heading">
+            <h2 class="section-heading" id="current-risk-heading">Current Risk</h2>
+            <div class="risk-panel"><span class="risk-level risk-{{ prediction.risk_band|lower }}">{{ prediction.risk_band|upper }}</span><strong>{{ current_risk_percentage|floatformat:0 }}%</strong><span class="muted">Current dropout probability</span></div>
+            <p class="note">Persisted model: {{ prediction.selected_model }}. Risk bands use the existing project thresholds; a prediction is not a causal or guaranteed outcome.</p>
+            <div class="actions">
+                {% if user_role == 'ADMIN' or user_role == 'EDUCATOR' %}
+                <a class="button" href="{% url 'record_intervention' %}?id_student={{ prediction.row.id_student|urlencode }}&amp;code_module={{ prediction.row.code_module|urlencode }}&amp;code_presentation={{ prediction.row.code_presentation|urlencode }}">+ Record Intervention</a>
+                {% endif %}
+                <a class="button secondary" href="{% url 'recommendations' %}?id_student={{ prediction.row.id_student|urlencode }}&amp;code_module={{ prediction.row.code_module|urlencode }}&amp;code_presentation={{ prediction.row.code_presentation|urlencode }}">View Recommendations</a>
+                {% if user_role == 'ADMIN' or user_role == 'EDUCATOR' %}
+                <a class="button secondary" href="{% url 'student_risk_dashboard' %}">Back to Risk Dashboard</a>
+                {% endif %}
+            </div>
+        </section>
+        <section class="card" aria-labelledby="risk-indicators-heading">
+            <h2 class="section-heading" id="risk-indicators-heading">Risk Indicators</h2>
+            <p class="note">Model feature contributions describe indicators associated with this prediction; they do not establish causation.</p>
+            {% for heading, items in explanation.items %}{% endfor %}
+            <h3>Higher-risk indicators</h3>{% if explanation.higher %}<div class="table-wrap"><table><thead><tr><th>Feature</th><th>Observed value</th><th>Contribution</th></tr></thead><tbody>{% for item in explanation.higher %}<tr><td>{{ item.feature }}</td><td>{{ item.value|floatformat:4 }}</td><td>{{ item.contribution|floatformat:4 }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p>No meaningful higher-risk indicators were found.</p>{% endif %}
+            <h3>Lower-risk indicators</h3>{% if explanation.lower %}<div class="table-wrap"><table><thead><tr><th>Feature</th><th>Observed value</th><th>Contribution</th></tr></thead><tbody>{% for item in explanation.lower %}<tr><td>{{ item.feature }}</td><td>{{ item.value|floatformat:4 }}</td><td>{{ item.contribution|floatformat:4 }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p>No meaningful lower-risk indicators were found.</p>{% endif %}
+        </section>
+        <section class="card" aria-labelledby="recommendations-heading">
+            <h2 class="section-heading" id="recommendations-heading">Recommendations</h2>
+            {% for recommendation in recommendations %}<article style="padding:12px 0;border-top:1px solid #e2e8f0"><strong>{{ recommendation.priority|upper }} PRIORITY</strong><h3>{{ recommendation.title }}</h3><p>{{ recommendation.message }}</p><p class="note">{{ recommendation.reason }}</p></article>{% empty %}<p>No recommendations are available for this profile.</p>{% endfor %}
+        </section>
+        <section class="card" id="intervention-history" aria-labelledby="intervention-history-heading">
+            <h2 class="section-heading" id="intervention-history-heading">Intervention History</h2>
+            {% if interventions %}
+                {% for intervention in interventions %}
+                <article id="intervention-{{ intervention.pk }}" style="padding:16px 0;border-top:1px solid #e2e8f0">
+                    <div class="table-wrap"><table><thead><tr><th>Date</th><th>Intervention</th><th>Priority</th><th>Status</th><th>Follow-up</th><th>Risk at Intervention</th>{% if user_role == 'ADMIN' or user_role == 'EDUCATOR' %}<th>Action</th>{% endif %}</tr></thead><tbody><tr>
+                        <td>{{ intervention.created_at|date:"d M Y" }}</td><td>{{ intervention.get_intervention_type_display }}</td><td>{{ intervention.get_priority_display }}</td><td><span class="badge">{{ intervention.get_status_display }}</span>{% if intervention.is_overdue %} <span class="badge overdue">OVERDUE</span>{% endif %}</td><td>{{ intervention.follow_up_date|date:"d M Y"|default:"Not set" }}</td><td>{{ intervention.risk_probability_at_intervention_percentage|floatformat:0 }}%</td>{% if user_role == 'ADMIN' or user_role == 'EDUCATOR' %}<td><a href="#edit-{{ intervention.pk }}">Edit follow-up</a></td>{% endif %}
+                    </tr></tbody></table></div>
+                    {% if intervention.risk_change_percentage_points %}<p class="note">Risk at intervention: {{ intervention.risk_probability_at_intervention_percentage|floatformat:0 }}% · Current assessed risk: {{ intervention.current_risk_percentage|floatformat:0 }}% · Change: {{ intervention.risk_change_percentage_points|floatformat:0 }} percentage points. Risk probability changed after the recorded intervention.</p>{% endif %}
+                    {% if user_role == 'ADMIN' or user_role == 'EDUCATOR' %}
+                    <form id="edit-{{ intervention.pk }}" class="edit-form" method="post" action="{% url 'update_intervention' intervention.pk %}">{% csrf_token %}
+                        <label for="status-{{ intervention.pk }}">Status<select id="status-{{ intervention.pk }}" name="status">{% for value, label in intervention_statuses %}<option value="{{ value }}" {% if intervention.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+                        <label for="follow-up-{{ intervention.pk }}">Follow-up date<input id="follow-up-{{ intervention.pk }}" type="date" name="follow_up_date" value="{{ intervention.follow_up_date|date:'Y-m-d' }}"></label>
+                        <label for="notes-{{ intervention.pk }}">Notes<textarea id="notes-{{ intervention.pk }}" name="notes">{{ intervention.notes }}</textarea></label>
+                        <button class="button" type="submit">Save update</button>
+                    </form>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state"><p><strong>No interventions recorded yet.</strong></p><p>Use "Record Intervention" to document the first support action.</p></div>
+            {% endif %}
+        </section>
+        {% endif %}
+    </div></main>
+</div>
+<script>
+function copySelection(select) {
+    const values = select.value.split("|");
+    document.getElementById("id_student").value = values[0] || "";
+    document.getElementById("code_module").value = values[1] || "";
+    document.getElementById("code_presentation").value = values[2] || "";
+}
+</script>
+</body>
+</html>

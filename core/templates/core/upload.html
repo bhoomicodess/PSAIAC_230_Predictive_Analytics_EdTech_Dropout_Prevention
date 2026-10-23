@@ -185,6 +185,25 @@
             margin-bottom: 22px;
         }
 
+        .intervention-overview {
+            margin: 0 0 22px;
+            padding: 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .intervention-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 12px;
+            margin: 14px 0;
+        }
+
+        .intervention-metric { padding: 12px; border-radius: 6px; background: #f8fafc; }
+        .intervention-metric strong { display: block; margin-top: 5px; font-size: 22px; }
+        .intervention-link { display: inline-flex; padding: 9px 13px; border-radius: 6px; color: #fff; background: #1d4ed8; font-weight: 700; text-decoration: none; }
+
         .stat-card {
             background: white;
             border: 1px solid #e2e8f0;
@@ -571,6 +590,10 @@
                 grid-template-columns: 1fr;
             }
 
+            .intervention-overview-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
             .workflow {
                 grid-template-columns: 1fr 1fr;
             }
@@ -596,7 +619,8 @@
          SIDEBAR
     ========================== -->
 
-    <aside class="sidebar">
+    {% include "core/sidebar.html" %}
+    {% if False %}<aside class="sidebar">
 
         <div class="logo">
 
@@ -616,43 +640,43 @@
         </div>
 
 
-        <a href="#" class="nav-item active">
+        <a href="{% url 'upload_dataset' %}" class="nav-item active">
             <span class="nav-icon">⌂</span>
             <span>Dashboard</span>
         </a>
 
 
-        <a href="#upload" class="nav-item">
+        <a href="{% url 'upload_dataset' %}" class="nav-item">
             <span class="nav-icon">↑</span>
             <span>Upload Dataset</span>
         </a>
 
 
-        <a href="#analysis" class="nav-item">
+        <a href="{% url 'upload_dataset' %}" class="nav-item">
             <span class="nav-icon">▦</span>
             <span>Dataset Analysis</span>
         </a>
 
 
-        <a href="#preprocessing" class="nav-item">
+        <a href="{% url 'data_preprocessing' %}" class="nav-item">
             <span class="nav-icon">⚙</span>
             <span>Data Preprocessing</span>
         </a>
 
 
-        <a href="#training" class="nav-item">
+        <a href="{% url 'model_training' %}" class="nav-item">
             <span class="nav-icon">◆</span>
             <span>Train Model</span>
         </a>
 
 
-        <a href="#prediction" class="nav-item">
+        <a href="{% url 'individual_prediction' %}" class="nav-item">
             <span class="nav-icon">◎</span>
             <span>Make Predictions</span>
         </a>
 
 
-        <a href="#recommendations" class="nav-item">
+        <a href="{% url 'early_warning_training' %}" class="nav-item">
             <span class="nav-icon">💡</span>
             <span>Recommendations</span>
         </a>
@@ -686,7 +710,7 @@
             <span>Help</span>
         </a>
 
-    </aside>
+    </aside>{% endif %}
 
 
     <!-- =========================
@@ -737,6 +761,43 @@
 
 
         <div class="content">
+
+            <section class="intervention-overview" aria-labelledby="intervention-overview-heading">
+                <h2 id="intervention-overview-heading">Intervention Overview</h2>
+                <div class="intervention-overview-grid">
+                    <div class="intervention-metric">Total Interventions<strong>{{ intervention_overview.total_interventions }}</strong></div>
+                    <div class="intervention-metric">Pending<strong>{{ intervention_overview.pending }}</strong></div>
+                    <div class="intervention-metric">In Progress<strong>{{ intervention_overview.in_progress }}</strong></div>
+                    <div class="intervention-metric">Completed<strong>{{ intervention_overview.completed }}</strong></div>
+                    <div class="intervention-metric">Overdue<strong>{{ intervention_overview.overdue }}</strong></div>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px; align-items:center;">
+                    <a class="intervention-link" href="{% url 'interventions' %}">View Interventions</a>
+                    <a class="intervention-link" href="{% url 'student_risk_dashboard' %}" style="background:#0f766e;">View Risk Dashboard</a>
+                </div>
+            </section>
+
+            <section class="card" aria-labelledby="attention-heading" style="margin-bottom:24px; background:linear-gradient(135deg, #fff7ed, #ffffff); border-color:#fed7aa;">
+                <h2 id="attention-heading" style="margin-bottom:12px;">What Needs Attention?</h2>
+                <div class="stats" style="grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom:0;">
+                    <div class="stat-card" style="background:#fff; border-color:#fecaca;">
+                        <div class="stat-label">High Risk Learners</div>
+                        <div class="stat-value" style="color:#b91c1c;">{{ risk_summary.high_risk|default:0 }}</div>
+                    </div>
+                    <div class="stat-card" style="background:#fff; border-color:#fdba74;">
+                        <div class="stat-label">Follow-ups Due Soon</div>
+                        <div class="stat-value" style="color:#c2410c;">{{ attention_summary.follow_up_due_soon|default:0 }}</div>
+                    </div>
+                    <div class="stat-card" style="background:#fff; border-color:#fca5a5;">
+                        <div class="stat-label">Urgent Interventions</div>
+                        <div class="stat-value" style="color:#b91c1c;">{{ attention_summary.urgent_interventions|default:0 }}</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;">
+                    <a class="intervention-link" href="{% url 'student_risk_dashboard' %}">Review Risk Dashboard</a>
+                    <a class="intervention-link" href="{% url 'interventions' %}" style="background:#2563eb;">View Interventions</a>
+                </div>
+            </section>
 
 
             <!-- =========================
@@ -934,7 +995,19 @@
                         ✓ Dataset analysed successfully.
                     </strong>
 
-                    Your dataset has been successfully loaded and analysed.
+                    Current dataset:
+                    <strong>{{ dataset_name }}</strong>
+                    has been successfully loaded and analysed.
+
+                    <form method="POST"
+                          action="{% url 'remove_dataset' %}"
+                          style="display:inline; margin-left:16px;">
+                        {% csrf_token %}
+                        <button type="submit"
+                                style="border:0; border-radius:7px; padding:8px 12px; background:#b91c1c; color:white; cursor:pointer;">
+                            Remove Dataset
+                        </button>
+                    </form>
 
                 </div>
 

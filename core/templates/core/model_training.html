@@ -29,44 +29,6 @@
             min-height: 100vh;
         }
 
-        .sidebar {
-            width: 240px;
-            background: #111827;
-            color: white;
-            padding: 25px 15px;
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-        }
-
-        .logo {
-            font-size: 19px;
-            font-weight: bold;
-            margin-bottom: 35px;
-            padding: 10px;
-        }
-
-        .nav {
-            display: block;
-            text-decoration: none;
-            color: #cbd5e1;
-            padding: 13px;
-            margin: 5px 0;
-            border-radius: 8px;
-        }
-
-        .nav:hover,
-        .active {
-            background: #2563eb;
-            color: white;
-        }
-
-        .main {
-            margin-left: 240px;
-            width: calc(100% - 240px);
-        }
-
         .header {
             background: white;
             padding: 25px 35px;
@@ -225,46 +187,7 @@
 <div class="layout">
 
 
-    <aside class="sidebar">
-
-        <div class="logo">
-            🤖 ML Prediction Engine
-        </div>
-
-        <a class="nav" href="/">
-            Dashboard
-        </a>
-
-        <a class="nav" href="/">
-            Upload Dataset
-        </a>
-
-        <a class="nav" href="/">
-            Dataset Analysis
-        </a>
-
-        <a class="nav" href="/preprocessing/">
-            Data Preprocessing
-        </a>
-
-        <a class="nav active"
-           href="/model-training/">
-            Train Model
-        </a>
-
-        <a class="nav" href="#">
-            Predictions
-        </a>
-
-        <a class="nav" href="#">
-            Recommendations
-        </a>
-
-        <a class="nav" href="#">
-            Model Performance
-        </a>
-
-    </aside>
+    {% include "core/sidebar.html" %}
 
 
     <main class="main">
@@ -541,7 +464,7 @@
 
 
                     <a
-                        href="#"
+                        href="{% url 'individual_prediction' %}"
                         class="button"
                     >
                         Make Predictions →
@@ -567,7 +490,7 @@
                     <br>
 
                     <a
-                        href="/preprocessing/"
+                        href="{% url 'data_preprocessing' %}"
                         class="button"
                     >
                         Go to Preprocessing

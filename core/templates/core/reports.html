@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports | ML Prediction Engine</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: #f4f7fb; color: #1e293b; }
+        .app { display: flex; min-height: 100vh; }
+        .main { margin-left: 250px; width: calc(100% - 250px); }
+        .content { max-width: 1220px; margin: 0 auto; padding: 30px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; }
+        .page-header h1 { margin: 0; font-size: 2rem; }
+        .page-header p { margin: 8px 0 0; color: #64748b; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px; margin-bottom: 20px; box-shadow: 0 5px 16px rgba(15, 23, 42, 0.04); }
+        .stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; }
+        .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+        .stat-value { font-size: 2rem; font-weight: 700; margin-top: 10px; }
+        .risk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+        .risk-card { border-radius: 12px; padding: 18px; border: 1px solid #e2e8f0; }
+        .risk-card.high { background: #fef2f2; border-color: #fecaca; }
+        .risk-card.medium { background: #fff7ed; border-color: #fed7aa; }
+        .risk-card.low { background: #ecfdf5; border-color: #bbf7d0; }
+        .distribution-row { display: grid; grid-template-columns: 90px 1fr 70px; align-items: center; gap: 12px; margin: 12px 0; }
+        .bar { height: 12px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
+        .bar span { display: block; height: 100%; background: #2563eb; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; color: #475569; }
+        .button { display: inline-block; padding: 10px 17px; border-radius: 10px; text-decoration: none; background: #2563eb; color: white; font-weight: 700; }
+        .empty { padding: 24px; border: 1px dashed #cbd5e1; border-radius: 12px; color: #64748b; text-align: center; }
+        @media (max-width: 900px) { .main { margin-left: 0; width: 100%; } .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .risk-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .content { padding: 18px; } .stats { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include "core/sidebar.html" %}
+    <main class="main">
+        <div class="content">
+            <header class="page-header">
+                <div>
+                    <h1>Reports</h1>
+                    <p>Overview of the current early-warning system and intervention activity.</p>
+                </div>
+                <a class="button" href="{% url 'download_report' %}">Download Report</a>
+            </header>
+
+            {% if error %}
+                <div class="card"><strong>Error:</strong> {{ error }}</div>
+            {% elif success %}
+                <div class="stats">
+                    <div class="stat-card"><div class="stat-label">Learners Analysed</div><div class="stat-value">{{ summary.total_learners }}</div></div>
+                    <div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value">{{ summary.high_risk }}</div></div>
+                    <div class="stat-card"><div class="stat-label">Medium Risk</div><div class="stat-value">{{ summary.medium_risk }}</div></div>
+                    <div class="stat-card"><div class="stat-label">Low Risk</div><div class="stat-value">{{ summary.low_risk }}</div></div>
+                    <div class="stat-card"><div class="stat-label">Interventions</div><div class="stat-value">{{ intervention_summary.total_interventions }}</div></div>
+                </div>
+
+                <section class="card">
+                    <h2>Risk Distribution</h2>
+                    {% for item in distribution %}
+                    <div class="distribution-row">
+                        <strong>{{ item.label|upper }}</strong>
+                        <div class="bar"><span style="width: {{ item.percentage }}%;"></span></div>
+                        <span>{{ item.count }} ({{ item.percentage }}%)</span>
+                    </div>
+                    {% endfor %}
+                </section>
+
+                <section class="card">
+                    <h2>Intervention Summary</h2>
+                    <div class="stats">
+                        <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value">{{ intervention_summary.pending }}</div></div>
+                        <div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-value">{{ intervention_summary.in_progress }}</div></div>
+                        <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value">{{ intervention_summary.completed }}</div></div>
+                        <div class="stat-card"><div class="stat-label">Overdue</div><div class="stat-value">{{ intervention_summary.overdue }}</div></div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Course / Module Summary</h2>
+                    {% if module_summary %}
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Module</th>
+                                    <th>Learners</th>
+                                    <th>High Risk</th>
+                                    <th>Medium Risk</th>
+                                    <th>Low Risk</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in module_summary %}
+                                <tr>
+                                    <td>{{ item.module }}</td>
+                                    <td>{{ item.learners }}</td>
+                                    <td>{{ item.High }}</td>
+                                    <td>{{ item.Medium }}</td>
+                                    <td>{{ item.Low }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty">No module summary is available for the current early-warning dataset.</div>
+                    {% endif %}
+                </section>
+            {% else %}
+                <div class="card empty">No report data is currently available. Run the early-warning workflow to generate results.</div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Performance | ML Prediction Engine</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: #f4f7fb; color: #1e293b; }
+        .app { display: flex; min-height: 100vh; }
+        .main { margin-left: 250px; width: calc(100% - 250px); }
+        .content { max-width: 1220px; margin: 0 auto; padding: 30px; }
+        .page-header { margin-bottom: 20px; }
+        .page-header h1 { margin: 0; font-size: 2rem; }
+        .page-header p { margin: 8px 0 0; color: #64748b; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px; margin-bottom: 20px; box-shadow: 0 5px 16px rgba(15, 23, 42, 0.04); }
+        .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; }
+        .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+        .stat-value { font-size: 2rem; font-weight: 700; margin-top: 10px; }
+        .metric-table { width: 100%; border-collapse: collapse; }
+        .metric-table th, .metric-table td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #e2e8f0; }
+        .metric-table th { background: #f8fafc; color: #475569; }
+        .chart-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 18px; }
+        .chart-row { display: grid; grid-template-columns: 135px 1fr; gap: 12px; align-items: center; }
+        .chart-label { font-weight: 600; color: #334155; }
+        .bar-shell { display: flex; gap: 8px; align-items: center; height: 18px; }
+        .bar { height: 18px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; }
+        .roc-panel { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
+        .roc-svg { width: 100%; height: 260px; background: linear-gradient(180deg, #f8fafc, #fff); border: 1px solid #e2e8f0; border-radius: 12px; }
+        .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+        .legend-item { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #475569; }
+        .swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+        .confusion-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .matrix-box { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; background: #f8fafc; }
+        .matrix-box strong { display: block; font-size: 1.8rem; margin-top: 4px; }
+        .table-wrap { overflow-x: auto; }
+        .limit-list { margin: 0; padding-left: 18px; color: #475569; }
+        .limit-list li { margin-bottom: 8px; }
+        .note { color: #475569; line-height: 1.6; }
+        .info-block { background: #eff6ff; border-left: 4px solid #2563eb; padding: 14px 16px; border-radius: 10px; color: #1e3a8a; }
+        .empty { padding: 24px; border: 1px dashed #cbd5e1; border-radius: 12px; color: #64748b; text-align: center; }
+        @media (max-width: 900px) { .main { margin-left: 0; width: 100%; } .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .roc-panel { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .content { padding: 18px; } .stats { grid-template-columns: 1fr; } .chart-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include "core/sidebar.html" %}
+    <main class="main">
+        <div class="content">
+            <header class="page-header">
+                <h1>Model Performance</h1>
+                <p>Measured evaluation metrics for the current early-warning models using the project-held-out test split.</p>
+            </header>
+
+            {% if error %}
+                <div class="card"><strong>Error:</strong> {{ error }}</div>
+            {% elif success %}
+                <div class="stats">
+                    <div class="stat-card"><div class="stat-label">Current Project Model</div><div class="stat-value" style="font-size: 1.3rem;">{{ selected_model }}</div></div>
+                    <div class="stat-card"><div class="stat-label">Test Set Size</div><div class="stat-value">{{ diagnostics.test_size }}</div></div>
+                    <div class="stat-card"><div class="stat-label">Selected Model ROC-AUC</div><div class="stat-value">{{ diagnostics.roc_auc }}%</div></div>
+                    <div class="stat-card"><div class="stat-label">Selected Model F1</div><div class="stat-value">{{ diagnostics.f1 }}%</div></div>
+                </div>
+
+                <section class="card">
+                    <h2>Model comparison</h2>
+                    <div class="table-wrap">
+                        <table class="metric-table" aria-label="Model comparison table">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Accuracy</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1 Score</th>
+                                    <th>ROC-AUC</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for model in results %}
+                                <tr>
+                                    <td>{{ model.name }}</td>
+                                    <td>{{ model.accuracy }}%</td>
+                                    <td>{{ model.precision }}%</td>
+                                    <td>{{ model.recall }}%</td>
+                                    <td>{{ model.f1 }}%</td>
+                                    <td>{{ model.roc_auc }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Model comparison visualization</h2>
+                    <div class="chart-grid">
+                        {% for metric in comparison_chart %}
+                        <div class="chart-row">
+                            <div class="chart-label">{{ metric.label }}</div>
+                            <div class="bar-shell">
+                                {% for item in metric.series %}
+                                <div class="bar" style="flex: {{ item.value }} 1 0; background: {{ item.color }}; min-width: 30px;">{{ item.value }}%</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <p class="note">These values are drawn from the current held-out evaluation dataset and are displayed as measured performance, not as guarantees for future learner cohorts.</p>
+                </section>
+
+                <section class="card">
+                    <h2>ROC Curve</h2>
+                    <div class="roc-panel">
+                        <svg class="roc-svg" viewBox="0 0 360 240" role="img" aria-label="Receiver operating characteristic curve for early-warning models">
+                            <line x1="0" y1="220" x2="340" y2="220" stroke="#94a3b8" stroke-width="1" />
+                            <line x1="0" y1="220" x2="0" y2="0" stroke="#94a3b8" stroke-width="1" />
+                            <line x1="0" y1="220" x2="340" y2="0" stroke="#64748b" stroke-dasharray="5 5" />
+                            {% for series in roc_curve_data %}
+                            <polyline fill="none" stroke="{{ series.color|default:'#2563eb' }}" stroke-width="2.5" points="{% for point in series.points %}{{ point.x|floatformat:2 }},{{ point.y|floatformat:2 }} {% endfor %}" />
+                            {% endfor %}
+                        </svg>
+                        <div>
+                            <p class="note">The ROC curve shows how model classification performance changes across different probability thresholds. ROC-AUC summarizes the model's ability to distinguish between dropout and non-dropout outcomes across those thresholds.</p>
+                            <div class="legend">
+                                {% for series in roc_curve_data %}
+                                <span class="legend-item"><span class="swatch" style="background: {{ series.color|default:'#2563eb' }};"></span>{{ series.name }} (AUC {{ series.auc }}%)</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Confusion Matrix</h2>
+                    <div class="confusion-grid">
+                        <div class="matrix-box"><div>True Negative</div><strong>{{ diagnostics.true_negatives }}</strong></div>
+                        <div class="matrix-box"><div>False Positive</div><strong>{{ diagnostics.false_positives }}</strong></div>
+                        <div class="matrix-box"><div>False Negative</div><strong>{{ diagnostics.false_negatives }}</strong></div>
+                        <div class="matrix-box"><div>True Positive</div><strong>{{ diagnostics.true_positives }}</strong></div>
+                    </div>
+                    <p class="note">False Positive: A learner is flagged as at-risk but is not classified as a dropout in the evaluation data. False Negative: A learner is not flagged as at-risk but is classified as a dropout in the evaluation data.</p>
+                </section>
+
+                <section class="card">
+                    <h2>Threshold analysis</h2>
+                    <div class="table-wrap">
+                        <table class="metric-table" aria-label="Threshold analysis table">
+                            <thead>
+                                <tr>
+                                    <th>Threshold</th>
+                                    <th>Predicted Positive Count</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in diagnostics.threshold_analysis %}
+                                <tr>
+                                    <td>{{ item.threshold }}</td>
+                                    <td>{{ item.predicted_positive_count }}</td>
+                                    <td>{{ item.precision }}%</td>
+                                    <td>{{ item.recall }}%</td>
+                                    <td>{{ item.f1 }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="note">Changing the threshold changes the trade-off between identifying more at-risk learners and reducing false positives. The current project-defined thresholds remain unchanged in this phase.</p>
+                </section>
+
+                <section class="card">
+                    <h2>Why Logistic Regression is the current project-selected model</h2>
+                    <p class="info-block">Logistic Regression is the current project-selected model because it achieved the highest measured accuracy and ROC-AUC among the evaluated models in the current experiment. These results are based on the current held-out evaluation dataset and may differ when the model is applied to data from another institution or learner population.</p>
+                </section>
+
+                <section class="card">
+                    <h2>Model Limitations</h2>
+                    <ul class="limit-list">
+                        {% for limit in model_limits %}
+                        <li>{{ limit }}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% else %}
+                <div class="card empty">No model performance data is currently available. Run the early-warning workflow to generate results.</div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+</body>
+</html>

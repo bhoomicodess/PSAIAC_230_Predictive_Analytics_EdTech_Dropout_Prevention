@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Recommendations | ML Prediction Engine</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f4f7fb; color: #1e293b; margin: 0; }
+        .app { display: flex; min-height: 100vh; }
+        .main { margin-left: 250px; width: calc(100% - 250px); min-height: 100vh; }
+        .content { max-width: 950px; margin: 0 auto; padding: 30px; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+        label { display: block; margin: 12px 0 6px; font-weight: bold; }
+        select, button { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; }
+        button { margin-top: 18px; background: #2563eb; color: white; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .error { background: #fef2f2; color: #991b1b; padding: 15px; border-radius: 10px; }
+        .risk { font-size: 20px; font-weight: bold; }
+        .recommendation { border-left: 5px solid #2563eb; }
+        .priority { color: #1d4ed8; font-size: 12px; font-weight: bold; letter-spacing: .8px; }
+        .reason { color: #475569; }
+        .note { color: #475569; font-size: 14px; }
+        @media (max-width: 800px) { .main { margin-left: 210px; width: calc(100% - 210px); } }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include "core/sidebar.html" %}
+    <main class="main"><div class="content">
+        <h1>Personalized Recommendations</h1>
+        <p>Support suggestions generated from the learner's current early-warning risk and model indicators.</p>
+        {% if error %}<div class="error"><strong>Error:</strong> {{ error }}</div>{% endif %}
+        <div class="card"><form method="get">
+            <label for="learner">Learner/course/presentation</label>
+            <select id="learner" name="selection" required onchange="copySelection(this)"><option value="">Select a learner</option>{% for option in learner_options %}<option value="{{ option.id_student }}|{{ option.code_module }}|{{ option.code_presentation }}">{{ option.id_student }} - {{ option.code_module }} - {{ option.code_presentation }}</option>{% endfor %}</select>
+            <input type="hidden" name="id_student" id="id_student"><input type="hidden" name="code_module" id="code_module"><input type="hidden" name="code_presentation" id="code_presentation">
+            <button type="submit">View recommendations</button>
+        </form></div>
+        {% if prediction %}
+        <div class="card"><h2>Current Early-Warning Result</h2>
+            <p><strong>Student ID:</strong> {{ prediction.row.id_student }}</p><p><strong>Module:</strong> {{ prediction.row.code_module }}</p><p><strong>Presentation:</strong> {{ prediction.row.code_presentation }}</p><p><strong>Dropout Probability:</strong> {{ risk_percentage|floatformat:0 }}%</p><p class="risk"><strong>Risk Level:</strong> {{ prediction.risk_band|upper }}</p>
+            <p class="note">Intervention priority is an application-level support priority based on the current risk classification. It is not a medical, psychological, or guaranteed dropout judgment.</p>
+        </div>
+        <div class="card"><h2>Prediction Indicators</h2><p class="note">These are model contributions, not causal explanations. They show indicators associated with the current prediction.</p>
+            <h3>Higher-risk indicators</h3>{% if explanation.higher %}<table><tr><th>Feature</th><th>Observed value</th><th>Contribution</th></tr>{% for item in explanation.higher %}<tr><td>{{ item.feature }}</td><td>{{ item.value|floatformat:4 }}</td><td>{{ item.contribution|floatformat:4 }}</td></tr>{% endfor %}</table>{% else %}<p>No meaningful higher-risk indicators were found.</p>{% endif %}
+            <h3>Lower-risk indicators</h3>{% if explanation.lower %}<table><tr><th>Feature</th><th>Observed value</th><th>Contribution</th></tr>{% for item in explanation.lower %}<tr><td>{{ item.feature }}</td><td>{{ item.value|floatformat:4 }}</td><td>{{ item.contribution|floatformat:4 }}</td></tr>{% endfor %}</table>{% else %}<p>No meaningful lower-risk indicators were found.</p>{% endif %}
+        </div>
+        <h2>Support Suggestions</h2>
+        {% for recommendation in recommendations %}
+        <div class="card recommendation"><div class="priority">{{ recommendation.priority|upper }} PRIORITY</div><p>{{ recommendation.category }}</p><h3>{{ recommendation.title }}</h3><p>{{ recommendation.message }}</p><p class="reason"><strong>Reason:</strong> {{ recommendation.reason }}</p></div>
+        {% endfor %}
+        <div class="card"><h2>Suggested next step</h2><p>Review the learner's current progress and consider the recommended support actions before the next assessment period.</p></div>
+        {% endif %}
+    </div></main>
+</div>
+<script>
+function copySelection(select) {
+    const values = select.value.split("|");
+    document.getElementById("id_student").value = values[0] || "";
+    document.getElementById("code_module").value = values[1] || "";
+    document.getElementById("code_presentation").value = values[2] || "";
+}
+</script>
+</body>
+</html>

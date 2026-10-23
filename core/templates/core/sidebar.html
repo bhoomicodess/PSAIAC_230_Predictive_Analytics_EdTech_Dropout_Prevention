@@ -1,0 +1,164 @@
+{% load static %}
+{% if request.user.is_authenticated %}
+<aside class="sidebar app-sidebar" aria-label="Primary navigation">
+    <div class="logo"><img class="logo-image" src="{% static 'core/edtech-analytics-logo.svg' %}" alt="PSAIAC 230 EdTech"><div class="logo-text">ML Prediction Engine</div></div>
+
+    <div class="menu-title">Overview</div>
+    <a href="{% url 'upload_dataset' %}" class="nav-item{% if request.path == '/' %} active{% endif %}"><span class="nav-icon">&#8962;</span><span>Dashboard</span></a>
+
+    {% if user_role == 'ADMIN' or user_role == 'EDUCATOR' %}
+        <a href="{% url 'student_risk_dashboard' %}" class="nav-item{% if request.path == '/student-risk-dashboard/' %} active{% endif %}"><span class="nav-icon">&#9670;</span><span>Student Risk Dashboard</span></a>
+    {% endif %}
+
+    {% if user_role == 'ADMIN' %}
+        <div class="menu-title">Data &amp; Models</div>
+
+        <a href="{% url 'data_quality_audit' %}" class="nav-item{% if request.path == '/data-quality-audit/' %} active{% endif %}">
+            <span class="nav-icon">&#10003;</span>
+            <span>Data Quality Audit</span>
+        </a>
+
+        <a href="{% url 'data_preprocessing' %}" class="nav-item{% if request.path == '/preprocessing/' %} active{% endif %}"><span class="nav-icon">&#9881;</span><span>Data Preprocessing</span></a>
+        <a href="{% url 'model_training' %}" class="nav-item{% if request.path == '/model-training/' or request.path == '/early-warning-training/' %} active{% endif %}"><span class="nav-icon">&#9670;</span><span>Train Model</span></a>
+        <a href="{% url 'early_warning_training' %}" class="nav-subitem{% if request.path == '/early-warning-training/' %} active{% endif %}">Early-Warning Training</a>
+        <a href="{% url 'model_performance' %}" class="nav-item{% if request.path == '/model-performance/' %} active{% endif %}"><span class="nav-icon">&#9670;</span><span>Model Performance</span></a>
+    {% elif user_role == 'EDUCATOR' %}
+        <div class="menu-title">Monitoring</div>
+        <a href="{% url 'model_performance' %}" class="nav-item{% if request.path == '/model-performance/' %} active{% endif %}"><span class="nav-icon">&#9670;</span><span>Model Performance</span></a>
+    {% else %}
+        <div class="menu-title">My Support</div>
+        <a href="{% url 'individual_prediction' %}" class="nav-item{% if request.path == '/individual-prediction/' %} active{% endif %}"><span class="nav-icon">&#9678;</span><span>My Learner Profile</span></a>
+        <a href="{% url 'recommendations' %}" class="nav-item{% if request.path == '/recommendations/' %} active{% endif %}"><span class="nav-icon">&#128161;</span><span>My Recommendations</span></a>
+    {% endif %}
+
+    {% if user_role == 'ADMIN' or user_role == 'EDUCATOR' %}
+        <div class="menu-title">Student Support</div>
+        <a href="{% url 'individual_prediction' %}" class="nav-item{% if request.path == '/individual-prediction/' %} active{% endif %}"><span class="nav-icon">&#9678;</span><span>Make Predictions</span></a>
+        <a href="{% url 'batch_prediction' %}" class="nav-item{% if request.path == '/batch-prediction/' %} active{% endif %}"><span class="nav-icon">&#8649;</span><span>Batch Prediction</span></a>
+        <a href="{% url 'recommendations' %}" class="nav-item{% if request.path == '/recommendations/' %} active{% endif %}"><span class="nav-icon">&#128161;</span><span>Recommendations</span></a>
+        <a href="{% url 'interventions' %}" class="nav-item{% if request.path|slice:':14' == '/interventions' %} active{% endif %}"><span class="nav-icon">&#10003;</span><span>Interventions</span></a>
+        <div class="menu-title">Reporting</div>
+        <a href="{% url 'reports' %}" class="nav-item{% if request.path == '/reports/' %} active{% endif %}"><span class="nav-icon">&#9635;</span><span>Reports</span></a>
+    {% endif %}
+
+    <div class="menu-title">System</div>
+    <a href="{% url 'settings' %}" class="nav-item{% if request.path == '/settings/' %} active{% endif %}"><span class="nav-icon">&#9881;</span><span>Settings</span></a>
+    <a href="{% url 'help' %}" class="nav-item{% if request.path == '/help/' %} active{% endif %}"><span class="nav-icon">?</span><span>Help</span></a>
+
+    <div class="sidebar-user">
+        <div class="user-avatar">{{ user_initial }}</div>
+        <div class="user-meta">
+            <strong>{{ request.user.username }}</strong>
+            <small>{{ user_role_display }}</small>
+        </div>
+    </div>
+    <a href="{% url 'logout' %}" class="nav-item logout-item"><span class="nav-icon">&#8617;</span><span>Logout</span></a>
+</aside>
+<style>
+    .app-sidebar {
+        width: 250px !important;
+        min-width: 250px !important;
+        height: 100vh;
+        overflow-y: auto;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 10;
+        padding: 25px 16px;
+        background: linear-gradient(180deg, #111827, #172554) !important;
+        color: white !important;
+    }
+    .app-sidebar .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        margin-bottom: 35px;
+        font-size: 17px;
+        font-weight: 700;
+    }
+    .app-sidebar .logo-image {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        border-radius: 12px;
+        display: block;
+    }
+    .app-sidebar .logo-text { font-size: 17px; font-weight: 700; }
+    .app-sidebar .menu-title {
+        margin: 20px 10px 10px;
+        color: #94a3b8;
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .app-sidebar ~ .main {
+        margin-left: 250px !important;
+        width: calc(100% - 250px) !important;
+        min-width: 0;
+    }
+    .app-sidebar .nav-item { display: flex !important; }
+    .app-sidebar .nav-item,
+    .app-sidebar .nav-subitem {
+        box-sizing: border-box;
+    }
+    .app-sidebar .nav-item {
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 13px 14px;
+        margin: 5px 0;
+        border-radius: 10px;
+        color: #cbd5e1;
+        font-size: 14px;
+        text-decoration: none;
+    }
+    .app-sidebar .nav-item:hover,
+    .app-sidebar .nav-item.active {
+        background: linear-gradient(90deg, #4f46e5, #2563eb) !important;
+        color: white !important;
+    }
+    .app-sidebar .nav-icon { width: 22px; text-align: center; font-size: 16px; }
+    .app-sidebar .nav-subitem { display: block; margin: -2px 0 7px 48px; padding: 4px 8px; color: #94a3b8; font-size: 11px; text-decoration: none; }
+    .app-sidebar .nav-subitem:hover, .app-sidebar .nav-subitem.active { color: white; }
+    .app-sidebar .sidebar-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 10px;
+        margin-top: 18px;
+        border-top: 1px solid rgba(148, 163, 184, 0.28);
+        color: white;
+    }
+    .app-sidebar .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0f766e, #2563eb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+    .app-sidebar .user-meta {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    .app-sidebar .user-meta strong { font-size: 13px; }
+    .app-sidebar .user-meta small { color: #cbd5e1; font-size: 11px; }
+    .app-sidebar a:focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }
+    @media (max-width: 800px) {
+        .app { display: block !important; }
+        .app-sidebar { position: static; width: 100% !important; min-width: 0 !important; height: auto; max-height: 38vh; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 2px; }
+        .app-sidebar .logo { flex: 1 0 100%; margin: 0; padding: 6px; }
+        .app-sidebar .menu-title { flex: 1 0 100%; margin: 8px 8px 2px; }
+        .app-sidebar .nav-item { width: auto; flex: 1 1 145px; margin: 0; padding: 9px 10px; }
+        .app-sidebar .nav-item span:not(.nav-icon) { display: inline !important; }
+        .app-sidebar .menu-title { display: block !important; }
+        .app-sidebar .nav-subitem { margin-left: 10px; }
+        .app-sidebar ~ .main { margin-left: 0 !important; width: 100% !important; }
+    }
+</style>
+{% endif %}

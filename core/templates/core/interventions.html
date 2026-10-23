@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interventions | ML Prediction Engine</title>
+    <style>
+        * { box-sizing:border-box; }
+        body { margin:0; background:#f4f7fb; color:#1e293b; font-family:Arial,sans-serif; }
+        .app { display:flex; min-height:100vh; }
+        .main { margin-left:250px; width:calc(100% - 250px); min-height:100vh; }
+        .content { max-width:1380px; margin:0 auto; padding:30px; }
+        .page-header { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:20px; }
+        h1 { margin:0; color:#0f172a; font-size:28px; }
+        h2 { margin:0 0 15px; font-size:19px; }
+        .muted { color:#64748b; }
+        .summary { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-bottom:18px; }
+        .metric,.panel { background:#fff; border:1px solid #e2e8f0; border-radius:8px; }
+        .metric { padding:16px; }
+        .metric-label { color:#64748b; font-size:13px; }
+        .metric-value { margin-top:6px; font-size:26px; font-weight:700; }
+        .panel { padding:20px; margin-bottom:18px; }
+        .filters { display:grid; grid-template-columns:repeat(5,minmax(130px,1fr)) auto; gap:12px; align-items:end; }
+        label { display:grid; gap:5px; font-size:13px; font-weight:700; }
+        input,select,button { width:100%; min-height:40px; border:1px solid #cbd5e1; border-radius:6px; padding:8px 10px; background:#fff; color:inherit; font:inherit; }
+        button,.button { display:inline-flex; align-items:center; justify-content:center; width:auto; padding:9px 13px; border:1px solid #1d4ed8; border-radius:6px; background:#1d4ed8; color:#fff; font:inherit; font-weight:700; text-decoration:none; cursor:pointer; }
+        :focus-visible { outline:3px solid #f59e0b; outline-offset:2px; }
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; min-width:940px; border-collapse:collapse; }
+        th,td { padding:11px 10px; text-align:left; vertical-align:top; border-bottom:1px solid #e2e8f0; }
+        th { color:#475569; font-size:13px; }
+        .badge { display:inline-block; padding:4px 8px; border-radius:4px; background:#f1f5f9; color:#334155; font-size:12px; font-weight:700; white-space:nowrap; }
+        .badge.overdue { color:#991b1b; background:#fee2e2; }
+        .risk { font-weight:700; white-space:nowrap; }
+        .risk-high { color:#b91c1c; } .risk-medium { color:#a16207; } .risk-low { color:#15803d; }
+        .pagination { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:16px; }
+        .pagination a { padding:7px 10px; border:1px solid #cbd5e1; border-radius:5px; color:#1d4ed8; text-decoration:none; }
+        .pagination .current { font-weight:700; }
+        .empty-state { padding:30px 12px; color:#475569; text-align:center; }
+        @media (max-width:1100px) { .filters { grid-template-columns:repeat(3,minmax(130px,1fr)); } .summary { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+        @media (max-width:800px) { .main { margin-left:0; width:100%; } .content { padding:20px; } }
+        @media (max-width:560px) { .content { padding:14px; } .page-header { display:block; } .summary,.filters { grid-template-columns:repeat(2,minmax(0,1fr)); } .filters button { grid-column:1/-1; width:100%; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include "core/sidebar.html" %}
+    <main class="main"><div class="content">
+        <header class="page-header"><div><h1>Interventions</h1><p class="muted">Track learner support actions and follow-up dates.</p></div></header>
+        <section class="summary" aria-label="Intervention summary">
+            <article class="metric"><div class="metric-label">Total Interventions</div><div class="metric-value">{{ summary.total_interventions }}</div></article>
+            <article class="metric"><div class="metric-label">Pending</div><div class="metric-value">{{ summary.pending }}</div></article>
+            <article class="metric"><div class="metric-label">In Progress</div><div class="metric-value">{{ summary.in_progress }}</div></article>
+            <article class="metric"><div class="metric-label">Completed</div><div class="metric-value">{{ summary.completed }}</div></article>
+            <article class="metric"><div class="metric-label">Overdue</div><div class="metric-value">{{ summary.overdue }}</div></article>
+        </section>
+        <section class="panel" aria-label="Filter interventions">
+            <form class="filters" method="get">
+                <label for="search">Search Student<input id="search" name="search" type="search" value="{{ search }}" placeholder="Student ID"></label>
+                <label for="filter-status">Status<select id="filter-status" name="status"><option value="All">All statuses</option>{% for value, label in statuses %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+                <label for="filter-priority">Priority<select id="filter-priority" name="priority"><option value="All">All priorities</option>{% for value, label in priorities %}<option value="{{ value }}" {% if selected_priority == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+                <label for="filter-type">Intervention Type<select id="filter-type" name="type"><option value="All">All types</option>{% for value, label in intervention_types %}<option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+                <label for="sort">Sort<select id="sort" name="sort"><option value="follow_up" {% if sort == 'follow_up' %}selected{% endif %}>Follow-up date</option><option value="created" {% if sort == 'created' %}selected{% endif %}>Recently recorded</option></select></label>
+                <button type="submit">Apply filters</button>
+            </form>
+        </section>
+        <section class="panel" aria-labelledby="queue-heading">
+            <h2 id="queue-heading">Intervention Queue</h2>
+            {% if page_obj.object_list %}
+            <div class="table-wrap"><table><thead><tr><th>Student</th><th>Module</th><th>Intervention</th><th>Priority</th><th>Follow-up Date</th><th>Status</th><th>Risk at Record</th><th>Action</th></tr></thead><tbody>
+                {% for intervention in page_obj %}<tr>
+                    <td>{{ intervention.student_id }}</td><td>{{ intervention.code_module }} / {{ intervention.code_presentation }}</td><td>{{ intervention.get_intervention_type_display }}</td><td>{{ intervention.get_priority_display }}</td>
+                    <td>{{ intervention.follow_up_date|date:"d M Y"|default:"Not set" }}{% if intervention.is_overdue %}<br><span class="badge overdue">OVERDUE</span>{% endif %}</td>
+                    <td><span class="badge">{{ intervention.get_status_display }}</span>{% if intervention.is_overdue %} <span class="badge overdue">OVERDUE</span>{% endif %}</td>
+                    <td><span class="risk risk-{{ intervention.risk_band|lower }}">{{ intervention.risk_band|upper }}</span><br>{{ intervention.risk_probability_percentage|floatformat:0 }}%</td>
+                    <td><a class="button" href="{% url 'individual_prediction' %}?id_student={{ intervention.student_id|urlencode }}&amp;code_module={{ intervention.code_module|urlencode }}&amp;code_presentation={{ intervention.code_presentation|urlencode }}#intervention-{{ intervention.pk }}">Open student</a></td>
+                </tr>{% endfor %}
+            </tbody></table></div>
+            <p class="muted">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} interventions</p>
+            <nav class="pagination" aria-label="Intervention pages">{% if page_obj.has_previous %}<a href="?{{ query_string }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}{% for number in page_obj.paginator.page_range %}{% if number == page_obj.number %}<span class="current" aria-current="page">{{ number }}</span>{% elif number >= page_obj.number|add:'-2' and number <= page_obj.number|add:'2' %}<a href="?{{ query_string }}&amp;page={{ number }}">{{ number }}</a>{% endif %}{% endfor %}{% if page_obj.has_next %}<a href="?{{ query_string }}&amp;page={{ page_obj.next_page_number }}">Next</a>{% endif %}</nav>
+            {% else %}<div class="empty-state"><strong>No interventions match these filters.</strong><p>Change the filters or record a support action from a student profile.</p></div>{% endif %}
+        </section>
+    </div></main>
+</div>
+</body>
+</html>

@@ -418,7 +418,8 @@
 
     <!-- SIDEBAR -->
 
-    <aside class="sidebar">
+    {% include "core/sidebar.html" %}
+    {% if False %}<aside class="sidebar">
 
         <div class="logo">
 
@@ -438,7 +439,7 @@
         </div>
 
 
-        <a href="/" class="nav-item">
+        <a href="{% url 'upload_dataset' %}" class="nav-item">
 
             <span class="nav-icon">
                 ⌂
@@ -451,7 +452,7 @@
         </a>
 
 
-        <a href="/" class="nav-item">
+        <a href="{% url 'upload_dataset' %}" class="nav-item">
 
             <span class="nav-icon">
                 ↑
@@ -464,7 +465,7 @@
         </a>
 
 
-        <a href="/" class="nav-item">
+        <a href="{% url 'upload_dataset' %}" class="nav-item">
 
             <span class="nav-icon">
                 ▦
@@ -477,7 +478,7 @@
         </a>
 
 
-        <a href="/preprocessing/" class="nav-item active">
+        <a href="{% url 'data_preprocessing' %}" class="nav-item active">
 
             <span class="nav-icon">
                 ⚙
@@ -495,7 +496,7 @@
         </div>
 
 
-        <a href="#" class="nav-item">
+        <a href="{% url 'model_training' %}" class="nav-item">
 
             <span class="nav-icon">
                 ◆
@@ -508,7 +509,7 @@
         </a>
 
 
-        <a href="#" class="nav-item">
+        <a href="{% url 'individual_prediction' %}" class="nav-item">
 
             <span class="nav-icon">
                 ◎
@@ -521,7 +522,7 @@
         </a>
 
 
-        <a href="#" class="nav-item">
+        <a href="{% url 'early_warning_training' %}" class="nav-item">
 
             <span class="nav-icon">
                 💡
@@ -534,7 +535,7 @@
         </a>
 
 
-        <a href="#" class="nav-item">
+        <a href="{% url 'early_warning_training' %}" class="nav-item">
 
             <span class="nav-icon">
                 ▥
@@ -546,7 +547,7 @@
 
         </a>
 
-    </aside>
+    </aside>{% endif %}
 
 
     <!-- MAIN -->
@@ -1074,7 +1075,7 @@
 
 
                     <a
-                        href="#"
+                        href="{% url 'model_training' %}"
                         class="next-button"
                     >
                         Train Models →

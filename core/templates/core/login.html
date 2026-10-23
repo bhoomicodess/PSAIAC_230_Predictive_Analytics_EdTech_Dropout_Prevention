@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdTech Sign In</title>
+    <style>
+        :root {
+            --navy: #0f172a;
+            --navy-strong: #111827;
+            --teal: #0f766e;
+            --blue: #2563eb;
+            --light: #f8fafc;
+            --card: #ffffff;
+            --border: #dfe7f1;
+            --muted: #64748b;
+            --danger: #b91c1c;
+            --danger-bg: #fee2e2;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e0f2fe, #ecfeff 30%, #eef2ff 100%);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--navy);
+        }
+        .login-shell {
+            width: min(450px, calc(100vw - 32px));
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.12);
+            padding: 32px 28px 24px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .brand img {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: white;
+            border: 1px solid rgba(15,118,110,0.15);
+            padding: 5px;
+        }
+        .brand h1 {
+            margin: 0;
+            font-size: clamp(1.3rem, 3vw, 1.9rem);
+            letter-spacing: -0.03em;
+        }
+        .subtitle {
+            text-align: center;
+            margin: 0 0 22px;
+            color: var(--muted);
+            font-size: 0.97rem;
+        }
+        .error-box {
+            background: var(--danger-bg);
+            border: 1px solid #fecaca;
+            color: var(--danger);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--navy-strong);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .field {
+            position: relative;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fff;
+            padding: 13px 14px;
+            font-size: 1rem;
+            color: var(--navy);
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: 3px solid rgba(37, 99, 235, 0.12);
+            border-color: rgba(37, 99, 235, 0.45);
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 6px 8px;
+        }
+        .btn {
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--teal), var(--blue));
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .small-note {
+            text-align: center;
+            color: var(--muted);
+            margin-top: 14px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-shell">
+        <div class="brand">
+            <img src="{% static 'core/edtech-analytics-logo.svg' %}" alt="EdTech Logo">
+            <h1>ML Prediction Engine</h1>
+        </div>
+        <p class="subtitle">Early-Warning &amp; Student Support</p>
+
+        {% if form.errors %}
+            <div class="error-box">
+                <strong>Invalid username or password.</strong><br>
+                Please check your credentials and try again.
+            </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next_url|default:'/dashboard/' }}">
+
+            <div>
+                <label for="id_username">Username / Email</label>
+                <div class="field">
+                    {{ form.username }}
+                </div>
+            </div>
+
+            <div>
+                <label for="id_password">Password</label>
+                <div class="field">
+                    {{ form.password }}
+                    <button type="button" class="toggle-password" aria-label="Show password">Show</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Sign In</button>
+        </form>
+    </div>
+
+    <script>
+        const toggle = document.querySelector('.toggle-password');
+        const passwordInput = document.querySelector('input[type="password"]');
+        if (toggle && passwordInput) {
+            toggle.addEventListener('click', () => {
+                const showing = passwordInput.type === 'text';
+                passwordInput.type = showing ? 'password' : 'text';
+                toggle.textContent = showing ? 'Show' : 'Hide';
+            });
+        }
+    </script>
+</body>
+</html>
